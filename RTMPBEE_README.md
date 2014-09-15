@@ -86,6 +86,26 @@ $ workon bees
 $ pip install -r requirements.txt --system-site-packages
 ```
 
+Structure
+===
+A pre-defined session has been established in order for testing - both usability testing and load testing. The id associated with this session is **qa12345678**. Additionally, this is the corresponding stream name that will be broadcast to by a publisher and consumes by subscribers.
+
+In the context of this testing, the bees sent on attack are subscribers. As such, a broadcast session should be established prior to running an attack. This will provide more reliable information in requesting and establishing subscriptions in a load.
+
+## broadcast
+To intiate a broadcast session, visit [http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/broadcaster/broadcaster-index.html](http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/broadcaster/broadcaster-index.html), accept the security considerations from the Flash Player, select the camera you wish to use and click **start broadcast**.
+
+## subscribe
+You can view your broadcast session to ensure that it is running properly at: [http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/subscriber/viewer-index.html](http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/subscriber/viewer-index.html). The subscriber client at this url performs additional service requests to obtain the edge server IP it should connect to. For the **bees**, we will use 3 pre-defined edge server IPs to issue requests on.
+
+The 3 Edge servers that the broadcast is being distributed to are:
+
+* 54.201.243.119
+* 54.213.96.38
+* 54.201.249.200
+
+### Only use these 3 IPs when issung RTMPBee requests. The examples that follow in this document use 54.201.243.119 in their explanation.
+
 Running
 ===
 There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attack2`, and `down`.
