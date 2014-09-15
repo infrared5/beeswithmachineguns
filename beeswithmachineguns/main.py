@@ -177,7 +177,6 @@ commands:
     attach_group2 = OptionGroup(parser, "attack2",
                                 """Beginning a video attack requires only that you specify the --cmd option with the formatted Java command for RTMPBee""")
 
-    # "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 3 5"
     attach_group2.add_option('-Z', '--cmd',  metavar="COMMAND",  nargs=1,
                             action='store', dest='command', type='string', default=False,
                             help="The command to issue on an RTMPBee.")
