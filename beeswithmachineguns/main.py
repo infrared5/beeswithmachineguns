@@ -121,6 +121,16 @@ commands:
 
     parser.add_option_group(attack_group)
 
+    # Attack 2 - RTMPBee
+    attach_group2 = OptionGroup(parser, "attack2",
+                                """Beginning a video attack requires only that you specify the --cmd option with the formatted Java command for RTMPBee""")
+
+    # "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 3 5"
+    attach_group2.add_option('-Z', '--cmd',  metavar="COMMAND",  nargs=1,
+                            action='store', dest='command', type='string', default=False,
+                            help="The command to issue on an RTMPBee.")
+    parser.add_option_group(attach_group2)
+
     (options, args) = parser.parse_args()
 
     if len(args) <= 0:
@@ -159,7 +169,10 @@ commands:
         )
 
         bees.attack(options.url, options.number, options.concurrent, **additional_options)
-
+    elif command == 'attack2':
+        if not options.command:
+            parser.error('To run an RTMPBee attack you need to specify a command with --cmd')
+        bees.attack2(options.command)
     elif command == 'down':
         bees.down()
     elif command == 'report':

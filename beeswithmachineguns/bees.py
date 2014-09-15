@@ -540,3 +540,79 @@ def attack(url, n, c, **options):
             print('Your targets performance tests meet our standards, the Queen sends her regards.')
             sys.exit(0)
 
+def _attack2(params):
+    print 'Bee %i is joining the swarm.' % params['i']
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        pem_path = params.get('key_name') and _get_pem_path(params['key_name']) or None
+        if not os.path.isfile(pem_path):
+            print "no pem."
+            client.load_system_host_keys()
+            client.connect(params['instance_name'], username=params['username'])
+        else:
+            print "attempt connection %s" % params['username']
+            client.connect(
+                params['instance_name'],
+                username=params['username'],
+                key_filename=pem_path)
+
+        print 'Bee %i is firing her video camera. Click Click!' % params['i']
+        print 'Bee %i issuing commmand: %s' % (params['i'], params['command'])
+        benchmark_command = params['command']
+        stdin, stdout, stderr = client.exec_command(benchmark_command)
+
+        ab_results = stdout.read()
+        print 'result %r' % ab_results
+        print 'Bee %i is out of ammo.' % params['i']
+
+        client.close()
+
+        return {}
+    except socket.error, e:
+        return e
+
+def attack2(cmd):
+    username, key_name, zone, instance_ids = _read_server_list()
+
+    if not instance_ids:
+        print 'No bees are ready to attack.'
+        return
+
+    print 'Connecting to the hive.'
+
+    ec2_connection = boto.ec2.connect_to_region(_get_region(zone))
+
+    print 'Assembling bees.'
+
+    reservations = ec2_connection.get_all_instances(instance_ids=instance_ids)
+
+    instances = []
+
+    for reservation in reservations:
+        instances.extend(reservation.instances)
+
+    instance_count = len(instances)
+
+    params = []
+
+    for i, instance in enumerate(instances):
+        params.append({
+            'i': i,
+            'instance_id': instance.id,
+            'instance_name': instance.public_dns_name,
+            'username': username,
+            'key_name': key_name,
+            'command': cmd
+        })
+
+    print 'Stinging URL so it will be cached for the attack.'
+    print 'Organizing the swarm.'
+    # Spin up processes for connecting to EC2 instances
+    pool = Pool(len(params))
+    results = pool.map(_attack2, params)
+
+    print 'Offensive complete.'
+    print 'The swarm is awaiting new orders.'
+    sys.exit(0)
