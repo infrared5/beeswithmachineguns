@@ -104,7 +104,7 @@ The 3 Edge servers that the broadcast is being distributed to are:
 * 54.213.96.38
 * 54.201.249.200
 
-### Only use these 3 IPs when issung RTMPBee requests. The examples that follow in this document use 54.201.243.119 in their explanation.
+**Only use these 3 IPs when issung RTMPBee requests. The examples that follow in this document use 54.201.243.119 in their explanation.**
 
 Running
 ===
