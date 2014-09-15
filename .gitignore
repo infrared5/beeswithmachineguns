@@ -10,3 +10,5 @@ env
 launch.json
 tasks.json
 data.json
+
+*-secret.md
