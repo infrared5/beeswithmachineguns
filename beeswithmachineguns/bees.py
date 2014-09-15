@@ -944,7 +944,6 @@ def hurl_attack(url, n, c, **options):
             print('Your targets performance tests meet our standards, the Queen sends her regards.')
             sys.exit(0)
 
-
 def _hurl_attack(params):
     """
     Test the target URL with requests.
@@ -954,6 +953,8 @@ def _hurl_attack(params):
 
     print('Bee %i is joining the swarm.' % params['i'])
 
+def _attack2(params):
+    print('Bee %i is joining the swarm.' % params['i'])
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -1284,3 +1285,47 @@ def _get_existing_regions():
         something= re.search(r'\.bees\.(.*)', f)
         existing_regions.append( something.group(1)) if something else "no"
     return existing_regions
+
+def attack2(cmd):
+    username, key_name, zone, instance_ids = _read_server_list()
+
+    if not instance_ids:
+        print('No bees are ready to attack.')
+        return
+
+    print('Connecting to the hive.')
+
+    ec2_connection = boto.ec2.connect_to_region(_get_region(zone))
+
+    print('Assembling bees.')
+
+    reservations = ec2_connection.get_all_instances(instance_ids=instance_ids)
+
+    instances = []
+
+    for reservation in reservations:
+        instances.extend(reservation.instances)
+
+    instance_count = len(instances)
+
+    params = []
+
+    for i, instance in enumerate(instances):
+        params.append({
+            'i': i,
+            'instance_id': instance.id,
+            'instance_name': instance.public_dns_name,
+            'username': username,
+            'key_name': key_name,
+            'command': cmd
+        })
+
+    print('Stinging URL so it will be cached for the attack.')
+    print('Organizing the swarm.')
+    # Spin up processes for connecting to EC2 instances
+    pool = Pool(len(params))
+    results = pool.map(_attack2, params)
+
+    print ('Offensive complete.')
+    print ('The swarm is awaiting new orders.')
+    sys.exit(0)
