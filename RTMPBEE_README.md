@@ -148,4 +148,4 @@ The Red5 server endpoints that the RTMPBees are attacking have been equipped wit
 
 [http://SERVER_IP:5080/admin/Red5AdminAIR.swf](http://SERVER_IP:5080/admin/Red5AdminAIR.swf)
 
-Once loaded, you will need to provide a **Server Address** and **Username**. Enter the _SERVER_IP_ in to the **Server Address field and _admin_ in the **Username** field. Leave the **Password** field blank.
+Once loaded, you will need to provide a **Server Address** and **Username**. Enter the _SERVER_IP_ in to the **Server Address** field and _admin_ in the **Username** field. Leave the **Password** field blank.
