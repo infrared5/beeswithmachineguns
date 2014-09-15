@@ -1,6 +1,6 @@
 RTMPBee
 ===
-| The RTMPBee project utilizes an AMI that is equipped with a Red5-based java program that attempts to subscribe N-number of clients to a stream on a target server.
+> The RTMPBee project utilizes an AMI that is equipped with a Red5-based java program that attempts to subscribe N-number of clients to a stream on a target server.
 
 Credential Requirements
 ===
@@ -17,7 +17,7 @@ Operations
 ===
 The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Infrared5 developed a java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attack2`.
 
-### attack2
+## attack2
 
 `attack2` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the RTMPBee - on its root and is available to be invoked as such:
 
@@ -25,34 +25,34 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
 ```
 
-### rtmpbee.jar
+## rtmpbee.jar
 The following defines the CLI options for the rtmpbee JAR:
 
 ```
 java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
 ```
 
-#### server-url
+### server-url
 The IP address of the server on which the stream resides.
 
-#### server-port
+### server-port
 The RTMP port number on the server that is available.
 
-#### application-name
+### application-name
 The application name that the broadcast stream resides in.
 
-#### stream-name
+### stream-name
 The stream name of the broadcast to consume.
 
-#### n-streams
+### n-streams
 The amount of stream clients to create.
 
-#### timeout-seconds
+### timeout-seconds
 The amount of lapsed time (in seconds) after issuing a subscribe request to shut down the consumption session. The current API of RTMPClient in the Red5 code source does not support responding to subscription events of a client. As such, the determination of having successfully started playback is unreliable. At the moment, the Bee is requested to exit the subscription session after a period of time to allow for relinquish of control. The default is 10 seconds. This option allows you to define a desired number that best suits testing.
 
 Setup
 ===
-### Note: This is optional, but recommended
+### Note: virtualenvwrapper is optional, but recommended
 
 When working on multiple python projects, it is generally a recommended practice to isolate your environment for each project so as not to overwrite dependencies globally. The accepted tool to do so in the Python community is [virtualenv](http://www.virtualenv.org).
 
@@ -92,7 +92,7 @@ There are 3 commands that will be used in issuing an attack with an RTMPBee: `up
 
 **Make sure you have the PEM_FILE in your _~/.ssh_ directory and have access to the proper AWS_KEY and AWS_SECRET credentials.**
 
-### up
+## up
 The `up` command is prepended with the definition of global properties related to credentials. The following command will spin up **3** servers based on the AMI with id **ami-0ba9e83b** with the security group **launch-wizard-3** in the **us-west-2a** AWS zone.
 
 Additionally, the **ubuntu** user, which is associated with the PEM_FILE, is the user that is logged into an SSH session when the bees are ready to attack.
@@ -103,7 +103,7 @@ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-0ba9
 
 **Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attack2`.
 
-### attack2
+## attack2
 The `attack2` command invokes the RTMPBee with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue **5** subscription streams to **rtmp://54.201.243.119:1935/live/qa12345678** and request each stream to shut down **10** seconds after connecting.
 
 **The quotation marks (") are required around the command string provided to `--cmd` option**
@@ -112,7 +112,7 @@ The `attack2` command invokes the RTMPBee with options explained in more detail 
 AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 10"
 ```
 
-### down
+## down
 The `down` command spins down the spun up instances through `up`.
 
 ```
@@ -125,4 +125,6 @@ The Red5 server endpoints that the RTMPBees are attacking have been equipped wit
 
 [http://SERVER_IP:5080/admin/Red5AdminAIR.swf](http://SERVER_IP:5080/admin/Red5AdminAIR.swf)
 
-In following with the examples from this document, that would look like the following: [http://54.201.243.119:5080/admin/Red5AdminAIR.swf](http://54.201.243.119:5080/admin/Red5AdminAIR.swf)
+Once loaded, you will need to provide a **Server Address** and **Username**. Enter the _SERVER_IP_ in to the **Server Address field and _admin_ in the **Username** field. Leave the **Password** field blank.
+
+In following with the examples from this document, the admin url would be accesible at the following url: [http://54.201.243.119:5080/admin/Red5AdminAIR.swf](http://54.201.243.119:5080/admin/Red5AdminAIR.swf)
