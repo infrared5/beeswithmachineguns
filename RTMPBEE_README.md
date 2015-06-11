@@ -142,6 +142,14 @@ The `down` command spins down the spun up instances through `up`.
 AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 ```
 
+Tracking
+===
+Using tcptrack. SSH into edge server and issue:
+
+```
+$ sudo tcptrack -i eth0 port 1935
+```
+
 Stream Administration
 ===
 The Red5 server endpoints that the RTMPBees are attacking have been equipped with an administrative panel that allows one to track the amount of client streams being requested on an application. To access the admin console, point your browser to the following location under the Red5 installation, replacing **SERVER_IP** with the IP used in the RTMPBee JAR command from `attack2`:
