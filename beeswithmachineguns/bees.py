@@ -626,6 +626,7 @@ def attackInvaluable(url, **options):
     print 'Attempting to access Stream endpoint at url: %s.' % url
     try:
         response = urllib2.urlopen(url).read()
+#        response = 'rtmp://gogle.com:1935/live/qa12345678'
         print 'Response: %s.' % response
         if rtmp.match(response) is None:
             print 'Stream endpoint not provided in correct format from Response.'
