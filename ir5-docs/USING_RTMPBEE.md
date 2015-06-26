@@ -2,6 +2,8 @@ RTMPBee
 ===
 > The RTMPBee project utilizes an AMI that is equipped with a Red5-based java program that attempts to subscribe N-number of clients to a stream on a target server.
 
+[IR5 RTMPBee fork](https://github.com/infrared5/rtmpbee)
+
 Credential Requirements
 ===
 The following are required credentials in order to properly run **bees** with an RTMPBee:
@@ -20,10 +22,10 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 ## attack2
 
 `attack2` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the RTMPBee - on its root and is available to be invoked as such:
-
 ```
 ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
 ```
+
 
 ## rtmpbee.jar
 The following defines the CLI options for the rtmpbee JAR:
@@ -137,6 +139,14 @@ The `down` command spins down the spun up instances through `up`.
 
 ```
 AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
+```
+
+Tracking
+===
+Using tcptrack. SSH into edge server and issue:
+
+```
+$ sudo tcptrack -i eth0 port 1935
 ```
 
 Stream Administration
