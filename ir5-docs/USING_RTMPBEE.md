@@ -33,12 +33,12 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 ./bees attackInvaluable --endpoint http://52.6.70.166/api/1.0/event/play/qa12345678 --streamcount 5 --timeout 5
 ```
 
-### --endpoint option
+### --endpoint
 The host `52.6.70.166` is the IP of the Stream Manager (or Load Balancer). The ending `qa12345678` URI refers to the `eventId`.
 
 Upon payload from the `GET` request at the provided URL, the bees tool will invoke the Java-based [RTMPBee](https://github.com/infrared5/rtmpbee) as mentioned in the following section.
 
-### --streamcount option
+### --streamcount
 The amount of Bees (subscribers) to issue
 
 ### --timeout
