@@ -616,3 +616,68 @@ def attack2(cmd):
     print 'Offensive complete.'
     print 'The swarm is awaiting new orders.'
     sys.exit(0)
+
+def attackInvaluable(url, **options):
+    rtmp = re.compile('^rtmp(.*)?', re.IGNORECASE)
+    rtmp_url = None
+    count = options.get('streamcount', 0)
+    timeout = options.get('timeout', 0)
+
+    print 'Attempting to access Stream endpoint at url: %s.' % url
+    try:
+        response = urllib2.urlopen(url).read()
+        print 'Response: %s.' % response
+        if rtmp.match(response) is None:
+            print 'Stream endpoint not provided in correct format from Response.'
+            system.exit(0)
+        rtmp_url = response
+    except urllib2.HTTPError, e:
+        print '[HTTPError] :: Could not complete request at %s. Reason: %s' % (url, e)
+        sys.exit(0)
+    except urllib2.URLError, e:
+        print '[URLError] :: Could not complete request at %s. Reason: %s' % (url, e)
+        sys.exit(0)
+
+    username, key_name, zone, instance_ids = _read_server_list()
+
+    if not instance_ids:
+        print 'No bees are ready to attack.'
+        return
+
+    print 'Connecting to the hive.'
+
+    ec2_connection = boto.ec2.connect_to_region(_get_region(zone))
+
+    print 'Assembling bees.'
+
+    reservations = ec2_connection.get_all_instances(instance_ids=instance_ids)
+
+    instances = []
+
+    for reservation in reservations:
+        instances.extend(reservation.instances)
+
+    instance_count = len(instances)
+
+    params = []
+
+    for i, instance in enumerate(instances):
+        params.append({
+            'i': i,
+            'instance_id': instance.id,
+            'instance_name': instance.public_dns_name,
+            'username': username,
+            'key_name': key_name,
+            'command': 'java -jar rtmpbee.jar %s %d %d' % (rtmp_url, count, timeout)
+        })
+
+    print 'Stinging URL so it will be cached for the attack.'
+    print 'Organizing the swarm.'
+    # Spin up processes for connecting to EC2 instances
+    pool = Pool(len(params))
+    results = pool.map(_attack2, params)
+
+    print 'Offensive complete.'
+    print 'The swarm is awaiting new orders.'
+    sys.exit(0)
+

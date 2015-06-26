@@ -130,6 +130,19 @@ commands:
                             help="The command to issue on an RTMPBee.")
     parser.add_option_group(attach_group2)
 
+    # Attack Invaluable - RTMPBee
+    attach_group3 = OptionGroup(parser, "attackInvaluable",
+                                """Beginning a video attack requires that you specify the --url option pointing to the RESTful endpoint to access the subscription stream URL""")
+
+    attach_group3.add_option('--endpoint', metavar="URL", nargs=1,
+                                action='store', dest='endpoint', type='string',
+                                help="The RESTful URL endpoint to request stream URL.")
+    attach_group3.add_option('--streamcount', metavar='streamcount', nargs=1, action='store', dest='streamcount', default=5, type='int',
+                            help='Amount of streams (bees) to launch as subscribers (default: 5).')
+    attach_group3.add_option('--timeout', metavar='timeout', nargs=1, action='store', dest='timeout', default=5, type='int',
+                            help='Timeout, in seconds (default: 5).')
+    parser.add_option_group(attach_group3)
+
     (options, args) = parser.parse_args()
 
     if len(args) <= 0:
@@ -172,6 +185,10 @@ commands:
         if not options.command:
             parser.error('To run an RTMPBee attack you need to specify a command with --cmd')
         bees.attack2(options.command)
+    elif command == 'attackInvaluable':
+        if not options.endpoint:
+            parse.error('To run the RTMPBee attack against an Invaluable stream, you must specify a --endpoint option');
+        bees.attackInvaluable(options.endpoint, **dict(streamcount=options.streamcount, timeout=options.timeout))
     elif command == 'down':
         bees.down()
     elif command == 'report':

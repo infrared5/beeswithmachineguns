@@ -30,12 +30,19 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 `attackInvaluable` makes running an attack unsing an RTMPBee easier by just providing a full REST URL with a variable `eventId` URI parameter (also used for the stream name on the server) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target subscriber URL.
 
 ```
-./bees attackInvaluable http://52.6.70.166/api/1.0/event/play/qa12345678 5 5
+./bees attackInvaluable --endpoint http://52.6.70.166/api/1.0/event/play/qa12345678 --streamcount 5 --timeout 5
 ```
 
-The ending `qa12345678` URI refers to the `eventId`.
+### --endpoint option
+The host `52.6.70.166` is the IP of the Stream Manager (or Load Balancer). The ending `qa12345678` URI refers to the `eventId`.
 
 Upon payload from the `GET` request at the provided URL, the bees tool will invoke the Java-based [RTMPBee](https://github.com/infrared5/rtmpbee) as mentioned in the following section.
+
+### --streamcount option
+The amount of Bees (subscribers) to issue
+
+### --timeout
+The timeout amount (in seconds).
 
 ## rtmpbee.jar
 The following defines the CLI options for the rtmpbee JAR:
