@@ -15,9 +15,13 @@ These will be referred to as _PEM_FILE_, _AWS_KEY_ and _AWS_SECRET_ in any examp
 
 ### Please ask your administrator for these credentials.
 
+#### You may need to create a new IAM User.
+Infrared5 has created the user `invaluablebee` with __AdministratorAccess__ policy: https://console.aws.amazon.com/iam/home#users/invaluablebee
+If is this User's KEY and SECRET values that will be used in an attack using the Infrared5 AWS account.
+
 Operations
 ===
-The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attack2`. 
+The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a Java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attack2`. 
 
 ## attack2
 
@@ -45,14 +49,34 @@ The amount of Bees (subscribers) to issue
 The timeout amount (in seconds).
 
 ## rtmpbee.jar
-The following defines the CLI options for the rtmpbee JAR:
+Found in the __/rtmpbee-dist__ directory of this repository is the `rtmpbee.jar` file used in the RTMPBees attacks. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTMPBee JAVA program.
 
+The RTMPBee can be invoked with 2 separate sets of options:
+
+* Full URL
+* Partial URIs
+
+### Full URL
+Using the full url of the endpoint stream to consume can be done using the CLI as follows:
+
+```
+java -jar rtmpbee.jar [server-endpoint] [n-streams] [timeout-seconds]
+```
+
+### Partial URIs
+Using the partials uris of the endpoint stream (for more fine grained detail) can be done using the CLI as follows:
 ```
 java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
 ```
 
+## CLI Options
+The following describes the command-line options regarding the two API.
+
+### server-endpoint
+The full URL endpoint that points to the stream to consume.
+
 ### server-url
-The IP address of the server on which the stream resides.
+The host IP address of the server on which the stream resides.
 
 ### server-port
 The RTMP port number on the server that is available.
@@ -69,7 +93,7 @@ The amount of stream clients to create.
 ### timeout-seconds
 The amount of lapsed time (in seconds) after issuing a subscribe request to shut down the consumption session. The current API of RTMPClient in the Red5 code source does not support responding to subscription events of a client. As such, the determination of having successfully started playback is unreliable. At the moment, the Bee is requested to exit the subscription session after a period of time to allow for relinquish of control. The default is 10 seconds. This option allows you to define a desired number that best suits testing. 
 
-Setup
+Developer Setup
 ===
 ### Note: virtualenvwrapper is optional, but recommended
 
@@ -107,52 +131,58 @@ $ pip install -r requirements.txt --system-site-packages
 
 Structure
 ===
-A pre-defined session has been established in order for testing - both usability testing and load testing. The id associated with this session is **qa12345678**. Additionally, this is the corresponding stream name that will be broadcast to by a publisher and consumes by subscribers. 
-
 In the context of this testing, the bees sent on attack are subscribers. As such, a broadcast session should be established prior to running an attack. This will provide more reliable information in requesting and establishing subscriptions in a load.
 
-## broadcast
-To intiate a broadcast session, visit [http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/broadcaster/broadcaster-index.html](http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/broadcaster/broadcaster-index.html), accept the security considerations from the Flash Player, select the camera you wish to use and click **start broadcast**.
+## Starting a Session
+To start a broadcast session, visit [http://52.6.70.166:8080/qaevent/](http://52.6.70.166:8080/qaevent/).
 
-## subscribe
-You can view your broadcast session to ensure that it is running properly at: [http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/subscriber/viewer-index.html](http://streammanager-balancer-547145200.us-west-2.elb.amazonaws.com/subscriber/viewer-index.html). The subscriber client at this url performs additional service requests to obtain the edge server IP it should connect to. For the **bees**, we will use 3 pre-defined edge server IPs to issue requests on.
+1. Click `Generate an Event Id`
+2. Select Region: `US East`
+3. Click `Create Event`
 
-The 3 Edge servers that the broadcast is being distributed to are:
+This will redirect you to a test page with a broadcaster and a subscriber. The URL will be appended with the `eventId` that will be used in the attack - for example: `http://52.6.70.166:8080/qaevent/qa-event.jsp?eventId=8zspWqEhaiP7FswyGs`.
 
-* 54.201.243.119
-* 54.213.96.38
-* 54.201.249.200
+## Broadcast
+To intiate a broadcast session, accept the security considerations from the Flash Player, select the camera you wish to use and click **start broadcast**.
 
-**Only use these 3 IPs when issung RTMPBee requests. The examples that follow in this document use 54.201.243.119 in their explanation.**
+## Verify
+To verify that you have established a broadcast session and have an available consumable endpoint for the RTMPBee subscribers, visit the following URL with the `eventId` generated for the event as the ending URI parameter:
+
+```
+http://52.6.70.166:8080/streammanager/api/1.0/event/play/8zspWqEhaiP7FswyGs
+```
+
+That should return - in plain text - the full-qualified URL endpoint of the stream.
 
 Running
 ===
-There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attack2`, and `down`.
+There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackInvaluable`, and `down`.
 
-**Make sure you have the PEM_FILE in your _~/.ssh_ directory and have access to the proper AWS_KEY and AWS_SECRET credentials.**
+## AMI
+An AMI is used to spin up **bees** as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated PEM_FILE that was used in creating the AMI. The security group used was `default`. _Visit the EC2 instance named "IR5 - invaluabledev-bee" for more detail_.
+
+**Before proceeding, make sure you have the PEM_FILE in your _~/.ssh_ directory and have access to the proper AWS_KEY and AWS_SECRET credentials.**
 
 ## up
-The `up` command is prepended with the definition of global properties related to credentials. The following command will spin up **3** servers based on the AMI with id **ami-0ba9e83b** with the security group **launch-wizard-3** in the **us-west-2a** AWS zone.
+The `up` command is prepended with the definition of global properties related to credentials. The following command will spin up **3** servers based on the AMI with id **ami-49874122** with the security group **default** in the **us-east-1a** AWS zone.
 
-Additionally, the **ubuntu** user, which is associated with the PEM_FILE, is the user that is logged into an SSH session when the bees are ready to attack.
-
-```
-AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-0ba9e83b -k PEM_FILE -s 3 -g launch-wizard-3 -z us-west-2a -l ubuntu
-```
-
-**Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attack2`.
-
-## attack2
-The `attack2` command invokes the RTMPBee with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue **5** subscription streams to **rtmp://54.201.243.119:1935/live/qa12345678** and request each stream to shut down **10** seconds after connecting.
-
-**The quotation marks (") are required around the command string provided to `--cmd` option**
+Additionally, the **ec2-user** user, which is associated with the `PEM_FILE`, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```
-AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 10"
+AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-49874122 -k PEM_FILE -s 3 -g default -z us-east-1a -l ec2-user
+```
+
+**Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackInvaluable`.
+
+## attackInvaluable
+The `attackInvaluable` command invokes the RTMPBee with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue **5** subscription streams to the endpoint returned from `http://52.6.70.166:8080/streammanager/api/1.0/event/play/8zspWqEhaiP7FswyGs` and request each stream to shut down **10** seconds after connecting.
+
+```
+AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET /bees attackInvaluable --endpoint http://52.6.70.166:8080/streammanager/api/1.0/event/play/8zspWqEhaiP7FswyGs --streamcount 5 --timeout 10
 ```
 
 ## down
-The `down` command spins down the spun up instances through `up`.
+The `down` command spins down the spun up instances through `up`. This should be run after the `attackInvaluable` has run its course.`
 
 ```
 AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
@@ -165,13 +195,3 @@ Using tcptrack. SSH into edge server and issue:
 ```
 $ sudo tcptrack -i eth0 port 1935
 ```
-
-Stream Administration
-===
-The Red5 server endpoints that the RTMPBees are attacking have been equipped with an administrative panel that allows one to track the amount of client streams being requested on an application. To access the admin console, point your browser to the following location under the Red5 installation, replacing **SERVER_IP** with the IP used in the RTMPBee JAR command from `attack2`:
-
-[http://SERVER_IP:5080/admin/Red5AdminAIR.swf](http://SERVER_IP:5080/admin/Red5AdminAIR.swf)
-
-Once loaded, you will need to provide a **Server Address** and **Username**. Enter the _SERVER_IP_ in to the **Server Address field and _admin_ in the **Username** field. Leave the **Password** field blank.
-
-In following with the examples from this document, the admin url would be accesible at the following url: [http://54.201.243.119:5080/admin/Red5AdminAIR.swf](http://54.201.243.119:5080/admin/Red5AdminAIR.swf)
