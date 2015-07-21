@@ -119,6 +119,7 @@ $ git clone git@github.com:infrared5/beeswithmachineguns.git bees_ir5
 
 ```
 $ cd bees_ir5
+$ git checkout invaluable origin/client/invaluable
 $ mkvirtualenv bees
 $ workon bees
 ```
