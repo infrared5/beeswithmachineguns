@@ -618,25 +618,11 @@ def attack2(cmd):
     sys.exit(0)
 
 def attackInvaluable(url, **options):
-    rtmp = re.compile('^rtmp(.*)?', re.IGNORECASE)
-    rtmp_url = None
+    endpoint_url = url
     count = options.get('streamcount', 0)
     timeout = options.get('timeout', 0)
 
-    print 'Attempting to access Stream endpoint at url: %s.' % url
-    try:
-        response = urllib2.urlopen(url).read()
-        print 'Response: %s.' % response
-        if rtmp.match(response) is None:
-            print 'Stream endpoint not provided in correct format from Response.'
-            sys.exit(0)
-        rtmp_url = response
-    except urllib2.HTTPError, e:
-        print '[HTTPError] :: Could not complete request at %s. Reason: %s' % (url, e)
-        sys.exit(0)
-    except urllib2.URLError, e:
-        print '[URLError] :: Could not complete request at %s. Reason: %s' % (url, e)
-        sys.exit(0)
+    print 'RESTful Stream access endpoint provided as url: %s.' % endpoint_url
 
     username, key_name, zone, instance_ids = _read_server_list()
 
@@ -668,7 +654,7 @@ def attackInvaluable(url, **options):
             'instance_name': instance.public_dns_name,
             'username': username,
             'key_name': key_name,
-            'command': 'java -jar rtmpbee.jar %s %d %d' % (rtmp_url, count, timeout)
+            'command': 'java -jar rtmpbee.jar %s %d %d' % (endpoint_url, count, timeout)
         })
 
     print 'Stinging URL so it will be cached for the attack.'
