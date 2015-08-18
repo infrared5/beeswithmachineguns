@@ -3,6 +3,7 @@ log/
 
 *.pyc
 theswarm.txt
+aws-setup.sh
 *.swp
 /.idea
 build
