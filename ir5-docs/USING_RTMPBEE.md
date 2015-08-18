@@ -40,13 +40,13 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 ### --endpoint
 The host `52.6.70.166` is the IP of the Stream Manager (or Load Balancer). The ending `qa12345678` URI refers to the `eventId`.
 
-Upon payload from the `GET` request at the provided URL, the bees tool will invoke the Java-based [RTMPBee](https://github.com/infrared5/rtmpbee) as mentioned in the following section.
+This URL is passed along to each Bee (RTMPBee) which handles making the RESTful request to access the endpoint for stream subscription.
 
 ### --streamcount
 The amount of Bees (subscribers) to issue
 
 ### --timeout
-The timeout amount (in seconds).
+The length of time to keep the subscription stream open (in seconds).
 
 ## rtmpbee.jar
 Found in the __/rtmpbee-dist__ directory of this repository is the `rtmpbee.jar` file used in the RTMPBees attacks. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTMPBee JAVA program.
