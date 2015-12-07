@@ -4,7 +4,6 @@ theswarm.txt
 /.idea
 build
 MANIFEST
-dist
 env
 
 *-secret.md
