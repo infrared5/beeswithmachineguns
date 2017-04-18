@@ -552,7 +552,7 @@ def _attack2(params):
             client.load_system_host_keys()
             client.connect(params['instance_name'], username=params['username'])
         else:
-            print "attempt connection %s" % params['username']
+            print "attempt connection to %s as %s, & pem %s" % (params['instance_name'], params['username'], pem_path)
             client.connect(
                 params['instance_name'],
                 username=params['username'],

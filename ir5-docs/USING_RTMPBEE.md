@@ -23,7 +23,7 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 
 `attack2` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the RTMPBee - on its root and is available to be invoked as such:
 ```
-./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
+$ ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
 ```
 
 
@@ -31,7 +31,7 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 The following defines the CLI options for the rtmpbee JAR:
 
 ```
-java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
+$ java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
 ```
 
 ### server-url
@@ -85,12 +85,12 @@ $ workon bees
 * Pull in dependencies (_while still in /bees_ir5_):
 
 ```
-$ pip install -r requirements.txt --system-site-packages
+$ pip install -r requirements.txt
 ```
 
 Structure
 ===
-A pre-defined session has been established in order for testing - both usability testing and load testing. The id associated with this session is **qa12345678**. Additionally, this is the corresponding stream name that will be broadcast to by a publisher and consumes by subscribers. 
+A pre-defined session has been established in order for testing - both usability testing and load testing. The id associated with this session is **qa12345678**. Additionally, this is the corresponding stream name that will be broadcast to by a publisher and consumes by subscribers.
 
 In the context of this testing, the bees sent on attack are subscribers. As such, a broadcast session should be established prior to running an attack. This will provide more reliable information in requesting and establishing subscriptions in a load.
 
