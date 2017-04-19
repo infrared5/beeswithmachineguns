@@ -258,6 +258,19 @@ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 
 # Tracking
 
+## Stream Manager API
+Revist the stats for the broadcast using the Stream Manager API while the attack is happening, e.g.,:
+
+```sh
+$ curl -X GET http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd/stats?accessToken=xyz123
+```
+
+You should see the `connectedSubscriber` attribute value tally be equal to the number of (`Bees` * `Bullets`) defined in the attack.
+
+> The stats are updated at intervals around 10 seconds. If you do not see the expected results right away, refresh the page or make the `curl` request at a later time.
+
+## TCPTrack
+
 Using `tcptrack` on Origin and Edge servers. SSH into server and issue:
 
 ```ssh
