@@ -540,7 +540,7 @@ def attack(url, n, c, **options):
             print('Your targets performance tests meet our standards, the Queen sends her regards.')
             sys.exit(0)
 
-def _attack2(params):
+def _attackStream(params):
     print 'Bee %i is joining the swarm.' % params['i']
     try:
         client = paramiko.SSHClient()
@@ -573,7 +573,7 @@ def _attack2(params):
     except socket.error, e:
         return e
 
-def attack2(cmd):
+def attackStream(cmd):
     username, key_name, zone, instance_ids = _read_server_list()
 
     if not instance_ids:
@@ -611,14 +611,15 @@ def attack2(cmd):
     print 'Organizing the swarm.'
     # Spin up processes for connecting to EC2 instances
     pool = Pool(len(params))
-    results = pool.map(_attack2, params)
+    results = pool.map(_attackStream, params)
 
     print 'Offensive complete.'
     print 'The swarm is awaiting new orders.'
     sys.exit(0)
 
-def attackInvaluable(url, **options):
+def attackStreamManager(url, **options):
     endpoint_url = url
+    port = options.get('port', 0)
     count = options.get('streamcount', 0)
     timeout = options.get('timeout', 0)
 
@@ -654,14 +655,14 @@ def attackInvaluable(url, **options):
             'instance_name': instance.public_dns_name,
             'username': username,
             'key_name': key_name,
-            'command': 'java -jar rtmpbee.jar %s %d %d' % (endpoint_url, count, timeout)
+            'command': 'java -jar rtmpbee.jar %s %d %d %d' % (port, endpoint_url, count, timeout)
         })
 
     print 'Stinging URL so it will be cached for the attack.'
     print 'Organizing the swarm.'
     # Spin up processes for connecting to EC2 instances
     pool = Pool(len(params))
-    results = pool.map(_attack2, params)
+    results = pool.map(_attackStreamManager, params)
 
     print 'Offensive complete.'
     print 'The swarm is awaiting new orders.'
