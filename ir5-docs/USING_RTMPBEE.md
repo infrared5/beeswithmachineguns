@@ -9,6 +9,9 @@ Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) d
 _Java 8 RTMP Bee is recommended._
 
 * [Requirements](#requirements)
+  * [Python](#python)
+  * [Java](#java)
+  * [AWS](#aws)
 * [Operations](#operations)
   * [attackStream](#attackstream)
   * [attackStreamManager](#attackstreammanager)
@@ -28,7 +31,9 @@ The following dependencies are required on your system in order to perform a *be
 
 > Check to be sure that you do not already have these dependencies on your system before installing with the `brew` examples.
 
-## Python 2.7
+## Python
+
+Python 2.7 is required.
 
 ```sh
 $ brew update
@@ -54,24 +59,97 @@ _Java 8 is preferred._
 ## AWS
 Amazon Web Services is used to spin up instances from an AMI that will serve as a single bee with N-number of bullets.
 
-## Credential Requirements
+### Bee AMI
+An AMI that contains the desired *RTMPBee* JAR is required in order to launch an attack.
+
+> Infrared5 has already created an AMI for *RTMPBee* load testing: `red5pro-load-beev2`.
+
+To create the AMI:
+
+1. Sign into your AWS account.
+2. Navigate to the desired region (i.e., *US East (N. Virginia)*).
+3. Select *Services > EC2*.
+4. Select *Instances*.
+5. Click *Launch Instance*.
+6. Select the `Ubuntu` AMI.
+7. Select `t2.micro` as *Instance Type*.
+8. Keep default *Instance Details* (or customize as seen fit).
+9. Keey default *Instance Storage*.
+10. Assign a `Name` tag to be able to easily find it for modification (i.e., `red5pro-load-bee`).
+11. Assign a *Security Group* that has the required Red5 Pro ports open.
+12. Review the Instance Details and click *Launch*.
+13. Create or Assign a security pair as desired (i.e., `red5proqa`). _The PEM will be used in the attack request, so hold on to it._
+14. Select the agreement and *Launch*.
+15. Once the new instance is available in *EC2 > Instances*, `ssh` into the box using the public IP and the PEM file from Step #13.
+
+For example:
+```sh
+$ ssh -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
+```
+
+#### Install Java
+While signed into the Instance, install Java:
+
+```sh
+$ sudo add-apt-repository ppa:webupd8team/java
+$ sudo apt-get update
+$ sudo apt-get install oracle-java8-installer
+```
+
+_The above installs Java 8 to use the [rtmpbee-dist/rtmpbee-java8.jar](rtmpbee-dist/rtmpbee-java8.jar)._
+
+> Reference: [https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04)
+
+#### Upload the RTMPBee JAR
+SFTP into the instance, for example:
+
+```sh
+$ sftp -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
+```
+
+In the prompt:
+
+```sh
+> put rtmpbee-dist/rtmpbee-java8.jar rtmpbee.jar
+```
+
+_SSH back into the instance ot ensure that the JAR was uploaded properly._
+
+#### Create the AMI from the Instance
+Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > Instances* and:
+
+1. Right-Click, *Image > Create Image*.
+2. Provide a `Image Name` and `Image Description`.
+3. Click *Create Image*.
+4. Navigate to *EC2 > AMIs*.
+5. Locate the newly created AMI and make note of the `AMI ID`.
+6. Once the AMI is available, Navigate back to *EC2 > Instances* and terminate the instance as we don't need it any more - we will be launching new instances based on the AMI.
+
+#### Important Information
+The specifics of the AMI in this example that will be used in the attack:
+
+| AMI ID | Name | Security Group | Region | PEM | User |
+| --- | --- | --- | --- | --- | --- |
+| ami-bdb321ab | red5pro-load-beev2 | red5-pro-ports | us-east-1e | red5proqa | ubuntu |
+
+### Credential Requirements
 The following are required credentials in order to properly run bees with an *RTMPBee*:
 
-* PEM file for AWS account using in attack
+* PEM file for AWS account usage in attack
 * KEY and SECRET for account to use with bees (paramiko)
 
-These will be referred to as _PEM_FILE_, _AWS_KEY_ and _AWS_SECRET_ in any examples of this documentation to follow.
+These will be referred to as *PEM_FILE*, *AWS_KEY* and *AWS_SECRET* in any examples of this documentation to follow.
 
 > Please ask your administrator for these credentials.
 
 #### You may need to create a new IAM User.
-Infrared5 has created the user `invaluablebee` with _AdministratorAccess_ policy: [https://console.aws.amazon.com/iam/home#users/invaluablebee](https://console.aws.amazon.com/iam/home#users/invaluablebee)
+Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy: [https://console.aws.amazon.com/iam/home#users/red5probee](https://console.aws.amazon.com/iam/home#users/red5probee)
 
-If is this User's *KEY* and *SECRET* values that will be used in an attack using the Infrared5 AWS account.
+> It is this User's *AWS_KEY* and *AWS_SECRET* values that will be used in an attack using the Infrared5 AWS account.
 
 # Operations
 
-The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a Java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attack2`.
+The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a Java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from *bees* was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the *bees* code to issue any CLI command through `attackStream`.
 
 ## attackStream
 
@@ -227,9 +305,11 @@ Note the `name` and `scope` attributes; they correspond to the `stream name` and
 There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackStreamManager`, and `down`.
 
 ### AMI
-An AMI is used to spin up *bees* as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated *PEM_FILE* that was used in creating the AMI. The security group used was `default`. _Visit the EC2 instance named "IR5 - invaluabledev-bee" for more detail_.
+An AMI is used to spin up *bees* as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated *PEM_FILE* that was used in creating the AMI. The security group used was `default`.
 
-> Before proceeding, make sure you have the *PEM_FILE* in your `~/.ssh` directory and have access to the proper *AWS_KEY* and *AWS_SECRET* credentials.
+Before proceeding, make sure you have the *PEM_FILE* in your `~/.ssh` directory and have access to the proper *AWS_KEY* and *AWS_SECRET* credentials.
+
+> If you set up your system to use `virtualenvwrapper`, first issue: `workon bees` before proceeding.
 
 ### up
 The `up` command is prepended with the definition of global properties related to credentials. The following command will spin up *3* servers based on the AMI with id *ami-49874122* with the security group *default* in the *us-east-1a* AWS zone.
@@ -237,7 +317,7 @@ The `up` command is prepended with the definition of global properties related t
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```ssh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-49874122 -k PEM_FILE -s 3 -g default -z us-east-1a -l ec2-user
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-bdb321ab -k red5proqa -s 3 -g red5-pro-ports -z us-east-1e -l ubuntu
 ```
 
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
@@ -252,8 +332,8 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET /bees attackStreamM
 ### down
 The `down` command spins down the spun up instances through `up`. This should be run after the `attackStreamManager` has run its course.`
 
-```
-AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
+```sh
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 ```
 
 # Tracking
