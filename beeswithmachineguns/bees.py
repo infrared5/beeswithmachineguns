@@ -104,7 +104,10 @@ def _delete_server_list(zone):
 
 
 def _get_pem_path(key):
-    return os.path.expanduser('~/.ssh/%s.pem' % key)
+    # keys can also be pub/private pairs, not only pems.
+    path = os.path.expanduser('~/.ssh/%s.pem' % key)
+    path_no_pem = os.path.expanduser('~/.ssh/%s' % key)
+    return path if os.path.isfile(path) is True else path_no_pem
 
 def _get_region(zone):
     return zone if 'gov' in zone else zone[:-1] # chop off the "d" in the "us-east-1d" to get the "Region"
@@ -1291,6 +1294,7 @@ def _attackStream(params):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         pem_path = params.get('key_name') and _get_pem_path(params['key_name']) or None
+	print('pem_path: %s' % pem_path)
         if not os.path.isfile(pem_path):
             print("no pem.")
             client.load_system_host_keys()

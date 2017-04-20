@@ -59,19 +59,23 @@ _Java 8 is preferred._
 ## AWS
 Amazon Web Services is used to spin up instances from an AMI that will serve as a single bee with N-number of bullets.
 
-### Bee AMI
+### Infrared5 Bee AMIs
+Currently, Infrared5 has create 2 Bee AMIs with differing virutalizations and in difference zones:
+
+* *US East (N. Virginia)*: `red5pro-load-bee-paravirtual`
+* *US West (N. California)*: `red5pro-load-bee-hvm`
+
+### Create a Bee AMI
 An AMI that contains the desired *RTMPBee* JAR is required in order to launch an attack.
 
-> Infrared5 has already created an AMI for *RTMPBee* load testing: `red5pro-load-beev2`.
-
-To create the AMI:
+To create the AMI with `paravirtual` virtualization:
 
 1. Sign into your AWS account.
 2. Navigate to the desired region (i.e., *US East (N. Virginia)*).
 3. Select *Services > EC2*.
 4. Select *Instances*.
 5. Click *Launch Instance*.
-6. Select an AMI that has *Virtualization* of `paravirtual`. (As of the time of this writing, *boto* and *beeswithmachineguns* only support `paravirtual` machines).
+6. Select an AMI that has *Virtualization* of `paravirtual`.
 7. Select `t1.micro` as *Instance Type*.
 8. Keep default *Instance Details* (or customize as seen fit).
 9. Keey default *Instance Storage*.
@@ -88,6 +92,8 @@ $ ssh -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
 ```
 
 > Be sure to assign your IP to the `22` port of the selected *Security Group*.
+
+_The creation of one for HVM is very similar, with the only change being in Steps #6 and #7._
 
 #### Install Java
 
