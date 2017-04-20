@@ -137,8 +137,9 @@ commands:
     attach_group3.add_option('--endpoint', metavar="URL", nargs=1,
                                 action='store', dest='endpoint', type='string',
                                 help="The RESTful URL endpoint to request stream URL.")
-    attach_group3.add_options('--port', metavar="port", nargs=1, action='store', dest='port', default=1935, type='int',
-                            help='The target port to subscribe on (default: 1935).')
+    attach_group3.add_option('--rtmpport', metavar='rtmpport', nargs=1,
+                                action='store', dest='rtmpport', default=1935, type='int',
+                                help='The target port to subscribe on (default: 1935).')
     attach_group3.add_option('--streamcount', metavar='streamcount', nargs=1, action='store', dest='streamcount', default=5, type='int',
                             help='Amount of streams (bees) to launch as subscribers (default: 5).')
     attach_group3.add_option('--timeout', metavar='timeout', nargs=1, action='store', dest='timeout', default=5, type='int',
@@ -190,7 +191,7 @@ commands:
     elif command == 'attackStreamManager':
         if not options.endpoint:
             parse.error('To run the RTMPBee attack against an stream access through the Stream Manager API, you must specify a --endpoint option');
-        bees.attackStreamManager(options.endpoint, **dict(port=options.port, streamcount=options.streamcount, timeout=options.timeout))
+        bees.attackStreamManager(options.endpoint, **dict(port=options.rtmpport, streamcount=options.streamcount, timeout=options.timeout))
     elif command == 'down':
         bees.down()
     elif command == 'report':
