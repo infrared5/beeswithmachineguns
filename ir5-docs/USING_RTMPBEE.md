@@ -71,12 +71,12 @@ To create the AMI:
 3. Select *Services > EC2*.
 4. Select *Instances*.
 5. Click *Launch Instance*.
-6. Select the `Ubuntu` AMI.
+6. Select an AMI that has *Virtualization* of `paravirtual`. (As of the time of this writing, *boto* and *beeswithmachineguns* only support `paravirtual` machines).
 7. Select `t2.micro` as *Instance Type*.
 8. Keep default *Instance Details* (or customize as seen fit).
 9. Keey default *Instance Storage*.
 10. Assign a `Name` tag to be able to easily find it for modification (i.e., `red5pro-load-bee`).
-11. Assign a *Security Group* that has the required Red5 Pro ports open.
+11. Assign a *Security Group* that has at least `22` and `1935` ports open.
 12. Review the Instance Details and click *Launch*.
 13. Create or Assign a security pair as desired (i.e., `red5proqa`). _The PEM will be used in the attack request, so hold on to it._
 14. Select the agreement and *Launch*.
@@ -87,7 +87,12 @@ For example:
 $ ssh -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
 ```
 
+> Be sure to assign your IP to the `22` port of the selected *Security Group*.
+
 #### Install Java
+
+> If you selected the Amazon AMI, Java is already installed. You can skip this step, but first make note of the Java version installed as you will need to upload the proper RTMPBee flavor.
+
 While signed into the Instance, install Java:
 
 ```sh
@@ -107,13 +112,19 @@ SFTP into the instance, for example:
 $ sftp -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
 ```
 
-In the prompt:
+In the prompt, to upload the Java 8 bee:
 
 ```sh
 > put rtmpbee-dist/rtmpbee-java8.jar rtmpbee.jar
 ```
 
-_SSH back into the instance ot ensure that the JAR was uploaded properly._
+In the prompt, to upload the Java 7 bee:
+
+```sh
+> put rtmpbee-dist/rtmpbee-java7.jar rtmpbee.jar
+```
+
+_SSH back into the instance to ensure that the JAR was uploaded properly._
 
 #### Create the AMI from the Instance
 Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > Instances* and:
@@ -128,9 +139,9 @@ Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > 
 #### Important Information
 The specifics of the AMI in this example that will be used in the attack:
 
-| AMI ID | Name | Security Group | Region | PEM | User |
+| AMI ID | Name | Security Group | Region | Subnet | PEM | User |
 | --- | --- | --- | --- | --- | --- |
-| ami-bdb321ab | red5pro-load-beev2 | red5-pro-ports | us-east-1e | red5proqa | ubuntu |
+| ami-b669fba0| red5pro-load-paravirtual | default | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
 
 ### Credential Requirements
 The following are required credentials in order to properly run bees with an *RTMPBee*:
@@ -317,7 +328,7 @@ The `up` command is prepended with the definition of global properties related t
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```ssh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-bdb321ab -k red5proqa -s 3 -g red5-pro-ports -z us-east-1e -l ubuntu
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
@@ -326,8 +337,10 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-bd
 The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd?action=subscribe&accessToken=xyz123` and request each stream to shut down *10* seconds after connecting.
 
 ```sh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET /bees attackStreamManager --endpoint http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123 --port 1935 --streamcount 5 --timeout 10
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123" --port 1935 --streamcount 5 --timeout 10
 ```
+
+> Note the quotation marks (`"`) around the stream manager API endpoint.
 
 ### down
 The `down` command spins down the spun up instances through `up`. This should be run after the `attackStreamManager` has run its course.`
