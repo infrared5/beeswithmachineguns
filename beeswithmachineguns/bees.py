@@ -599,7 +599,7 @@ def _create_request_time_cdf_csv(results, complete_bees_params, request_time_cdf
                 row = [i, request_time_cdf[i]] if i < len(request_time_cdf) else [i,float("inf")]
                 for r in results:
                     if r is not None:
-                    	row.append(r['request_time_cdf'][i]["Time in ms"])
+                      row.append(r['request_time_cdf'][i]["Time in ms"])
                 writer.writerow(row)
 
 
@@ -1294,7 +1294,7 @@ def _attackStream(params):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         pem_path = params.get('key_name') and _get_pem_path(params['key_name']) or None
-	print('pem_path: %s' % pem_path)
+        print('pem_path: %s' % pem_path)
         if not os.path.isfile(pem_path):
             print("no pem.")
             client.load_system_host_keys()

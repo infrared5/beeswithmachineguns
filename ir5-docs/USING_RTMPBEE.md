@@ -147,7 +147,9 @@ The specifics of the AMI in this example that will be used in the attack:
 
 | AMI ID | Name | Security Group | Region | Subnet | PEM | User |
 | --- | --- | --- | --- | --- | --- |
-| ami-b669fba0| red5pro-load-paravirtual | default | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
+| ami-b669fba0| red5pro-load-paravirtual | red5-pro-ports | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
+
+> These are the details that match the AMI set up in *US East (N. Virginia)*. There is an additional AMI set up in *US West (N. California)*.
 
 ### Credential Requirements
 The following are required credentials in order to properly run bees with an *RTMPBee*:
@@ -323,7 +325,7 @@ Note the `name` and `scope` attributes; they correspond to the `stream name` and
 There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackStreamManager`, and `down`.
 
 ### AMI
-An AMI is used to spin up *bees* as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated *PEM_FILE* that was used in creating the AMI. The security group used was `default`.
+An AMI is used to spin up *bees* as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated *PEM_FILE* that was used in creating the AMI. The security group used was `red5-pro-ports`.
 
 Before proceeding, make sure you have the *PEM_FILE* in your `~/.ssh` directory and have access to the proper *AWS_KEY* and *AWS_SECRET* credentials.
 
@@ -335,7 +337,7 @@ The `up` command is prepended with the definition of global properties related t
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```ssh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -t t1.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g red5-pro-ports -t t1.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
