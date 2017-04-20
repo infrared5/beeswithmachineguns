@@ -328,7 +328,7 @@ The `up` command is prepended with the definition of global properties related t
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```ssh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -z us-east-1a -l ec2-user -v subnet-259d4f52
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -t t2.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
@@ -361,6 +361,11 @@ $ curl -X GET http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd/stat
 You should see the `connectedSubscriber` attribute value tally be equal to the number of (`Bees` * `Bullets`) defined in the attack.
 
 > The stats are updated at intervals around 10 seconds. If you do not see the expected results right away, refresh the page or make the `curl` request at a later time.
+
+## NetData
+NetData was set up on the launched Edge (where subscribers are attacking). [https://github.com/firehol/netdata](https://github.com/firehol/netdata)
+
+You can view the console for NetData and track CPU, load, etc., by visiting the instance at port `19999`. e.g., [http://54.219.150.69:19999/](http://54.219.150.69:19999/).
 
 ## TCPTrack
 
