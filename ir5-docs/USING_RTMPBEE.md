@@ -72,7 +72,7 @@ To create the AMI:
 4. Select *Instances*.
 5. Click *Launch Instance*.
 6. Select an AMI that has *Virtualization* of `paravirtual`. (As of the time of this writing, *boto* and *beeswithmachineguns* only support `paravirtual` machines).
-7. Select `t2.micro` as *Instance Type*.
+7. Select `t1.micro` as *Instance Type*.
 8. Keep default *Instance Details* (or customize as seen fit).
 9. Keey default *Instance Storage*.
 10. Assign a `Name` tag to be able to easily find it for modification (i.e., `red5pro-load-bee`).
@@ -177,7 +177,8 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 `attackStreamManager` makes running an attack unsing an *RTMPBee* easier by just providing a full REST URL with `context` and `streamName` URI parameters (the webapp and stream name of to which a live broadcast is in session) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target (e.g., Edge) subscriber server details.
 
 ```ssh
-./bees attackStreamManager --endpoint http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123 --port 1935 --streamcount 5 --timeout 5
+./bees attackStreamManager --endpoint http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123 --port 1935 --streamcount 5 --streamtimeout 5
+
 ```
 
 ### --endpoint
@@ -191,7 +192,7 @@ The port on the Edge server for the *RTMPBee* to make an RTMP connection to star
 ### --streamcount
 The amount of Bees (subscribers) to issue
 
-### --timeout
+### --streamtimeout
 The length of time to keep the subscription stream open (in seconds).
 
 # RTMPBee JAR
@@ -303,7 +304,7 @@ $ curl -X GET http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd/stat
 
 _or copy and paste the url into a browser_
 
-Thew result should be similar to the following JSON:
+The result should be similar to the following JSON:
 
 ```js
 {"currentSubscribers":0,"startTime":1492618401576,"name":"todd","scope":"/live","serverAddress":"54.193.21.251","region":"us-west-1"}
@@ -328,7 +329,7 @@ The `up` command is prepended with the definition of global properties related t
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
 ```ssh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -t t2.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g default -t t1.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
@@ -337,7 +338,7 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b6
 The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd?action=subscribe&accessToken=xyz123` and request each stream to shut down *10* seconds after connecting.
 
 ```sh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123" --port 1935 --streamcount 5 --timeout 10
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123" --port 1935 --streamcount 5 --streamtimeout 10
 ```
 
 > Note the quotation marks (`"`) around the stream manager API endpoint.
@@ -374,3 +375,4 @@ Using `tcptrack` on Origin and Edge servers. SSH into server and issue:
 ```ssh
 $ sudo tcptrack -i eth0 port 1935
 ```
+

@@ -23,10 +23,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+from __future__ import print_function
 
-import bees
-from urlparse import urlparse
-from optparse import OptionParser, OptionGroup
+from future import standard_library
+standard_library.install_aliases()
+from builtins import zip
+from . import bees
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+from optparse import OptionParser, OptionGroup, Values
+import threading
+import time
+import sys
 
 def parse_options():
     """
@@ -76,6 +86,9 @@ commands:
     up_group.add_option('-v', '--subnet',  metavar="SUBNET",  nargs=1,
                         action='store', dest='subnet', type='string', default=None,
                         help="The vpc subnet id in which the instances should be launched. (default: None).")
+    up_group.add_option('-b', '--bid', metavar="BID", nargs=1,
+                        action='store', dest='bid', type='float', default=None,
+                        help="The maximum bid price per spot instance (default: None).")
 
     parser.add_option_group(up_group)
 
@@ -110,7 +123,36 @@ commands:
     attack_group.add_option('-e', '--csv', metavar="FILENAME", nargs=1,
                             action='store', dest='csv_filename', type='string', default='',
                             help="Store the distribution of results in a csv file for all completed bees (default: '').")
-
+    attack_group.add_option('-P', '--contenttype', metavar="CONTENTTYPE", nargs=1,
+                            action='store', dest='contenttype', type='string', default='text/plain',
+                            help="ContentType header to send to the target of the attack.")
+    attack_group.add_option('-I', '--sting', metavar="sting", nargs=1,
+                            action='store', dest='sting', type='int', default=1,
+                            help="The flag to sting (ping to cache) url before attack (default: 1). 0: no sting, 1: sting sequentially, 2: sting in parallel")
+    attack_group.add_option('-S', '--seconds', metavar="SECONDS", nargs=1,
+                            action='store', dest='seconds', type='int', default=60,
+                            help= "hurl only: The number of total seconds to attack the target (default: 60).")
+    attack_group.add_option('-X', '--verb', metavar="VERB", nargs=1,
+                            action='store', dest='verb', type='string', default='',
+                            help= "hurl only: Request command -HTTP verb to use -GET/PUT/etc. Default GET")
+    attack_group.add_option('-M', '--rate', metavar="RATE", nargs=1,
+                            action='store', dest='rate', type='int',
+                            help= "hurl only: Max Request Rate.")
+    attack_group.add_option('-a', '--threads', metavar="THREADS", nargs=1,
+                            action='store', dest='threads', type='int', default=1,
+                            help= "hurl only: Number of parallel threads. Default: 1")
+    attack_group.add_option('-f', '--fetches', metavar="FETCHES", nargs=1,
+                            action='store', dest='fetches', type='int',
+                            help= "hurl only: Num fetches per instance.")
+    attack_group.add_option('-d', '--timeout', metavar="TIMEOUT", nargs=1,
+                            action='store', dest='timeout', type='int',
+                            help= "hurl only: Timeout (seconds).")
+    attack_group.add_option('-E', '--send_buffer', metavar="SEND_BUFFER", nargs=1,
+                            action='store', dest='send_buffer', type='int',
+                            help= "hurl only: Socket send buffer size.")
+    attack_group.add_option('-F', '--recv_buffer', metavar="RECV_BUFFER", nargs=1,
+                            action='store', dest='recv_buffer', type='int',
+                            help= "hurl only: Socket receive buffer size.")
     # Optional
     attack_group.add_option('-T', '--tpr', metavar='TPR', nargs=1, action='store', dest='tpr', default=None, type='float',
                             help='The upper bounds for time per request. If this option is passed and the target is below the value a 1 will be returned with the report details (default: None).')
@@ -118,6 +160,16 @@ commands:
                             help='The lower bounds for request per second. If this option is passed and the target is above the value a 1 will be returned with the report details (default: None).')
     attack_group.add_option('-A', '--basic_auth', metavar='basic_auth', nargs=1, action='store', dest='basic_auth', default='', type='string',
                             help='BASIC authentication credentials, format auth-username:password (default: None).')
+    attack_group.add_option('-j', '--hurl', metavar="HURL_COMMANDS",
+                            action='store_true', dest='hurl',
+                            help="use hurl")
+    attack_group.add_option('-o', '--long_output', metavar="LONG_OUTPUT",
+                            action='store_true', dest='long_output',
+                            help="display hurl output")
+    attack_group.add_option('-L', '--responses_per', metavar="RESPONSE_PER",
+                            action='store_true', dest='responses_per',
+                            help="hurl only: Display http(s) response codes per interval instead of request statistics")
+
 
     parser.add_option_group(attack_group)
 
@@ -142,7 +194,7 @@ commands:
                                 help='The target port to subscribe on (default: 1935).')
     attach_group3.add_option('--streamcount', metavar='streamcount', nargs=1, action='store', dest='streamcount', default=5, type='int',
                             help='Amount of streams (bees) to launch as subscribers (default: 5).')
-    attach_group3.add_option('--timeout', metavar='timeout', nargs=1, action='store', dest='timeout', default=5, type='int',
+    attach_group3.add_option('--streamtimeout', metavar='streamtimeout', nargs=1, action='store', dest='streamtimeout', default=5, type='int',
                             help='Timeout, in seconds (default: 5).')
     parser.add_option_group(attach_group3)
 
@@ -152,25 +204,49 @@ commands:
         parser.error('Please enter a command.')
 
     command = args[0]
+    #set time for in between threads
+    delay = 0.2
 
     if command == 'up':
         if not options.key:
             parser.error('To spin up new instances you need to specify a key-pair name with -k')
 
         if options.group == 'default':
-            print 'New bees will use the "default" EC2 security group. Please note that port 22 (SSH) is not normally open on this group. You will need to use to the EC2 tools to open it before you will be able to attack.'
-        bees.up(options.servers, options.group, options.zone, options.instance, options.type, options.login, options.key, options.subnet)
+            print('New bees will use the "default" EC2 security group. Please note that port 22 (SSH) is not normally open on this group. You will need to use to the EC2 tools to open it before you will be able to attack.')
+        zone_len = options.zone.split(',')
+        if len(zone_len) > 1:
+            if len(options.instance.split(',')) != len(zone_len):
+                print("Your instance count does not match zone count")
+                sys.exit(1)
+            else:
+                ami_list = [a for a in options.instance.split(',')]
+                zone_list = [z for z in zone_len]
+                # for each ami and zone set zone and instance
+                for tup_val in zip(ami_list, zone_list):
+                    options.instance, options.zone = tup_val
+                    threading.Thread(target=bees.up, args=(options.servers, options.group,
+                                                            options.zone, options.instance,
+                                                            options.type,options.login,
+                                                            options.key, options.subnet,
+                                                            options.bid)).start()
+                    #time allowed between threads
+                    time.sleep(delay)
+        else:
+            bees.up(options.servers, options.group, options.zone, options.instance, options.type, options.login, options.key, options.subnet, options.bid)
+
     elif command == 'attack':
         if not options.url:
             parser.error('To run an attack you need to specify a url with -u')
 
-        parsed = urlparse(options.url)
-        if not parsed.scheme:
-            parsed = urlparse("http://" + options.url)
+        regions_list = []
+        for region in bees._get_existing_regions():
+                regions_list.append(region)
 
-        if not parsed.path:
-            parser.error('It appears your URL lacks a trailing slash, this will disorient the bees. Please try again with a trailing slash.')
-
+        # urlparse needs a scheme in the url. ab doesn't, so add one just for the sake of parsing.
+        # urlparse('google.com').path == 'google.com' and urlparse('google.com').netloc == '' -> True
+        parsed = urlparse(options.url) if '://' in options.url else urlparse('http://'+options.url)
+        if parsed.path == '':
+            options.url += '/'
         additional_options = dict(
             cookies=options.cookies,
             headers=options.headers,
@@ -180,23 +256,78 @@ commands:
             csv_filename=options.csv_filename,
             tpr=options.tpr,
             rps=options.rps,
-            basic_auth=options.basic_auth
+            basic_auth=options.basic_auth,
+            contenttype=options.contenttype,
+            sting=options.sting,
+            hurl=options.hurl,
+            seconds=options.seconds,
+            rate=options.rate,
+            long_output=options.long_output,
+            responses_per=options.responses_per,
+            verb=options.verb,
+            threads=options.threads,
+            fetches=options.fetches,
+            timeout=options.timeout,
+            send_buffer=options.send_buffer,
+            recv_buffer=options.recv_buffer
         )
+        if options.hurl:
+            for region in regions_list:
+                additional_options['zone'] = region
+                threading.Thread(target=bees.hurl_attack, args=(options.url, options.number, options.concurrent),
+                    kwargs=additional_options).start()
+                #time allowed between threads
+                time.sleep(delay)
+        else:
+            for region in regions_list:
+                additional_options['zone'] = region
+                threading.Thread(target=bees.attack, args=(options.url, options.number,
+                    options.concurrent), kwargs=additional_options).start()
+                #time allowed between threads
+                time.sleep(delay)
 
-        bees.attack(options.url, options.number, options.concurrent, **additional_options)
     elif command == 'attackStream':
         if not options.command:
             parser.error('To run an RTMPBee attack you need to specify a command with --cmd')
-        bees.attackStream(options.command)
+
+        regions_list = []
+        for region in bees._get_existing_regions():
+                regions_list.append(region)
+
+        for region in regions_list:
+            additional_options = dict(zone=region)
+            threading.Thread(target=bees.attackStream, args=(options.command,),
+                    kwargs=additional_options).start()
+            #time allowed between threads
+            time.sleep(delay)
+
     elif command == 'attackStreamManager':
         if not options.endpoint:
             parse.error('To run the RTMPBee attack against an stream access through the Stream Manager API, you must specify a --endpoint option');
-        bees.attackStreamManager(options.endpoint, **dict(port=options.port, streamcount=options.streamcount, timeout=options.timeout))
+
+        additional_options = dict(
+                port=options.port,
+                streamcount=options.streamcount,
+                streamtimeout=options.streamtimeout
+        )
+
+        regions_list = []
+        for region in bees._get_existing_regions():
+                regions_list.append(region)
+
+        for region in regions_list:
+            additional_options['zone'] = region
+            threading.Thread(target=bees.attackStreamManager, args=(options.endpoint,),
+                    kwargs=additional_options).start()
+            #time allowed between threads
+            time.sleep(delay)
+
     elif command == 'down':
         bees.down()
+
     elif command == 'report':
         bees.report()
 
-
 def main():
     parse_options()
+

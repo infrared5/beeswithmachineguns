@@ -8,7 +8,10 @@ aws-setup.sh
 /.idea
 build
 MANIFEST
-dist
 env
 
 *-secret.md
+launch.json
+tasks.json
+data.json
+
