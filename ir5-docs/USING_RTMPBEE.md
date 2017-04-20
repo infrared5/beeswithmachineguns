@@ -17,13 +17,13 @@ These will be referred to as _PEM_FILE_, _AWS_KEY_ and _AWS_SECRET_ in any examp
 
 Operations
 ===
-The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attack2`. 
+The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from **bees** was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the **bees** code to issue any CLI command through `attackStream`. 
 
-## attack2
+## attackStream
 
-`attack2` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the RTMPBee - on its root and is available to be invoked as such:
+`attackStream` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the RTMPBee - on its root and is available to be invoked as such:
 ```
-$ ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
+$ ./bees attackStream --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
 ```
 
 
@@ -110,7 +110,7 @@ The 3 Edge servers that the broadcast is being distributed to are:
 
 Running
 ===
-There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attack2`, and `down`.
+There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackStream`, and `down`.
 
 **Make sure you have the PEM_FILE in your _~/.ssh_ directory and have access to the proper AWS_KEY and AWS_SECRET credentials.**
 
@@ -123,15 +123,15 @@ Additionally, the **ubuntu** user, which is associated with the PEM_FILE, is the
 AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-0ba9e83b -k PEM_FILE -s 3 -g launch-wizard-3 -z us-west-2a -l ubuntu
 ```
 
-**Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attack2`.
+**Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStream`.
 
-## attack2
-The `attack2` command invokes the RTMPBee with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue **5** subscription streams to **rtmp://54.201.243.119:1935/live/qa12345678** and request each stream to shut down **10** seconds after connecting.
+## attackStream`
+The `attackStream` command invokes the RTMPBee with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue **5** subscription streams to **rtmp://54.201.243.119:1935/live/qa12345678** and request each stream to shut down **10** seconds after connecting.
 
 **The quotation marks (") are required around the command string provided to `--cmd` option**
 
 ```
-AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attack2 --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 10"
+AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStream --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 10"
 ```
 
 ## down
@@ -151,7 +151,7 @@ $ sudo tcptrack -i eth0 port 1935
 
 Stream Administration
 ===
-The Red5 server endpoints that the RTMPBees are attacking have been equipped with an administrative panel that allows one to track the amount of client streams being requested on an application. To access the admin console, point your browser to the following location under the Red5 installation, replacing **SERVER_IP** with the IP used in the RTMPBee JAR command from `attack2`:
+The Red5 server endpoints that the RTMPBees are attacking have been equipped with an administrative panel that allows one to track the amount of client streams being requested on an application. To access the admin console, point your browser to the following location under the Red5 installation, replacing **SERVER_IP** with the IP used in the RTMPBee JAR command from `attackStream`:
 
 [http://SERVER_IP:5080/admin/Red5AdminAIR.swf](http://SERVER_IP:5080/admin/Red5AdminAIR.swf)
 
