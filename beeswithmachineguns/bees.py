@@ -553,6 +553,8 @@ def _attackStream(params):
             client.connect(params['instance_name'], username=params['username'])
         else:
             print "attempt connection %s" % params['username']
+            print "instance=%s" % params['instance_name']
+            print "key=%s" % pem_path
             client.connect(
                 params['instance_name'],
                 username=params['username'],
@@ -655,14 +657,14 @@ def attackStreamManager(url, **options):
             'instance_name': instance.public_dns_name,
             'username': username,
             'key_name': key_name,
-            'command': 'java -jar rtmpbee.jar %s %d %d %d' % (port, endpoint_url, count, timeout)
+            'command': 'java -jar rtmpbee.jar %s %d %d %d' % (endpoint_url, port, count, timeout)
         })
 
     print 'Stinging URL so it will be cached for the attack.'
     print 'Organizing the swarm.'
     # Spin up processes for connecting to EC2 instances
     pool = Pool(len(params))
-    results = pool.map(_attackStreamManager, params)
+    results = pool.map(_attackStream, params)
 
     print 'Offensive complete.'
     print 'The swarm is awaiting new orders.'
