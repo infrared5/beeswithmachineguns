@@ -146,7 +146,7 @@ Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > 
 The specifics of the AMI in this example that will be used in the attack:
 
 | AMI ID | Name | Security Group | Region | Subnet | PEM | User |
-| --- | --- | --- | --- | --- | --- |
+| !--- | --- | --- | --- | --- | --- | ---! |
 | ami-b669fba0| red5pro-load-paravirtual | red5-pro-ports | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
 
 > These are the details that match the AMI set up in *US East (N. Virginia)*. There is an additional AMI set up in *US West (N. California)*.
