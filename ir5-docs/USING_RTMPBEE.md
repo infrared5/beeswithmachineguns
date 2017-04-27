@@ -88,7 +88,7 @@ To create the AMI with `paravirtual` virtualization:
 
 For example:
 ```sh
-$ ssh -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
+$ ssh -i ~/.ssh/red5proqa.pem ubuntu@xxx.xxx.xxx.xxx
 ```
 
 > Be sure to assign your IP to the `22` port of the selected *Security Group*.
@@ -117,6 +117,7 @@ SFTP into the instance, for example:
 ```sh
 $ sftp -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
 ```
+> You will upload the Java 8 *or* Java 7 version of the **rtmpbee** depending on the Java version installed on the instance.
 
 In the prompt, to upload the Java 8 bee:
 
@@ -162,7 +163,7 @@ These will be referred to as *PEM_FILE*, *AWS_KEY* and *AWS_SECRET* in any examp
 > Please ask your administrator for these credentials.
 
 #### You may need to create a new IAM User.
-Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy: [https://console.aws.amazon.com/iam/home#users/red5probee](https://console.aws.amazon.com/iam/home#users/red5probee)
+Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy, which can be located in the Account Credentials.
 
 > It is this User's *AWS_KEY* and *AWS_SECRET* values that will be used in an attack using the Infrared5 AWS account.
 
@@ -175,7 +176,7 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 `attackStream` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the *RTMPBee* - on its root and is available to be invoked as such:
 
 ```ssh
-./bees attackStream --cmd "java -jar rtmpbee.jar 54.201.243.119 1935 live qa12345678 5 5"
+./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
 ```
 
 > [RTMP Bee Documentation](https://github.com/infrared5/rtmpbee)
@@ -185,7 +186,7 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 `attackStreamManager` makes running an attack unsing an *RTMPBee* easier by just providing a full REST URL with `context` and `streamName` URI parameters (the webapp and stream name of to which a live broadcast is in session) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target (e.g., Edge) subscriber server details.
 
 ```ssh
-./bees attackStreamManager --endpoint http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123 --port 1935 --streamcount 5 --streamtimeout 5
+./bees attackStreamManager --endpoint http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName\?action\=subscribe\&accessToken\=abc123 --port 1935 --streamcount 5 --streamtimeout 5
 
 ```
 
@@ -295,7 +296,7 @@ $ pip install -r requirements.txt
 In the context of this testing, the bees sent on attack are subscribers. As such, a broadcast session should be established prior to running an attack. This will provide more reliable information in requesting and establishing subscriptions in a load.
 
 ## Start a Broadcast
-To start a broadcast session visit the Origin server and start an RTMP broadcast - mainly to get around CORS issues you may come across -, e.g., [http://54.193.21.251:5080/live/broadcast.jsp?host=54.193.21.251&view=rtmp](http://54.193.21.251:5080/live/broadcast.jsp?host=54.193.21.251&view=rtmp).
+To start a broadcast session visit the Origin server and start an RTMP broadcast - mainly to get around CORS issues you may come across -, e.g., [http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp](http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp).
 
 1. Enter a `Stream Name` (i.e., `test`).
 2. `Accept the security considerations from the Flash Player`.
@@ -307,7 +308,7 @@ To start a broadcast session visit the Origin server and start an RTMP broadcast
 To verify that you have established a broadcast session and have an available consumable endpoint for the *RTMPBee* subscribers, make the following similar `GET` request on the StreamManager:
 
 ```sh
-$ curl -X GET http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd/stats?accessToken=xyz123
+$ curl -X GET http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName/stats?accessToken=abc123
 ```
 
 _or copy and paste the url into a browser_
@@ -315,7 +316,7 @@ _or copy and paste the url into a browser_
 The result should be similar to the following JSON:
 
 ```js
-{"currentSubscribers":0,"startTime":1492618401576,"name":"todd","scope":"/live","serverAddress":"54.193.21.251","region":"us-west-1"}
+{"currentSubscribers":0,"startTime":1492618401576,"name":"streamName","scope":"/live","serverAddress":"xxx.xxx.xxx.xxx","region":"us-west-1"}
 ```
 
 Note the `name` and `scope` attributes; they correspond to the `stream name` and app `context`, respectively.
@@ -343,10 +344,10 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b6
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
 
 ### attackStreamManager
-The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd?action=subscribe&accessToken=xyz123` and request each stream to shut down *10* seconds after connecting.
+The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName?action=subscribe&accessToken=abc123` and request each stream to shut down *10* seconds after connecting.
 
 ```sh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd\?action\=subscribe\&accessToken\=xyz123" --port 1935 --streamcount 5 --streamtimeout 10
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName\?action\=subscribe\&accessToken\=abc123" --port 1935 --streamcount 5 --streamtimeout 10
 ```
 
 > Note the quotation marks (`"`) around the stream manager API endpoint.
@@ -364,7 +365,7 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 Revist the stats for the broadcast using the Stream Manager API while the attack is happening, e.g.,:
 
 ```sh
-$ curl -X GET http://52.9.184.79:5080/streammanager/api/2.0/event/live/todd/stats?accessToken=xyz123
+$ curl -X GET http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName/stats?accessToken=abc123
 ```
 
 You should see the `connectedSubscriber` attribute value tally be equal to the number of (`Bees` * `Bullets`) defined in the attack.
@@ -374,7 +375,7 @@ You should see the `connectedSubscriber` attribute value tally be equal to the n
 ## NetData
 NetData was set up on the launched Edge (where subscribers are attacking). [https://github.com/firehol/netdata](https://github.com/firehol/netdata)
 
-You can view the console for NetData and track CPU, load, etc., by visiting the instance at port `19999`. e.g., [http://54.219.150.69:19999/](http://54.219.150.69:19999/).
+You can view the console for NetData and track CPU, load, etc., by visiting the instance at port `19999`. e.g., [http://xxx.xxx.xxx.xxx:19999/](http://xxx.xxx.xxx.xxx:19999/).
 
 ## TCPTrack
 
