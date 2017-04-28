@@ -218,7 +218,7 @@ The RTMPBee can be invoked with 2 separate sets of options:
 Using the full url of the endpoint stream to consume can be done using the CLI as follows:
 
 ```sh
-$ java -jar rtmpbee.jar [server-endpoint] [n-streams] [timeout-seconds]
+$ java -jar rtmpbee.jar [server-endpoint] [server-port] [n-streams] [timeout-seconds]
 ```
 
 ## Partial URIs
