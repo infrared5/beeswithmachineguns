@@ -6,7 +6,7 @@ The total concurrent amount limit on an instance and the resources that RTMPBee 
 
 ## Question
 ```sh
-```we have a large server that we are running a bee on but it seems to have problems when we go over 100 connection the error seems to be related to Too many open files do you know what is causing this or how to get around it?```
+we have a large server that we are running a bee on but it seems to have problems when we go over 100 connection the error seems to be related to Too many open files do you know what is causing this or how to get around it?```
 ```
 
 ## Issue
