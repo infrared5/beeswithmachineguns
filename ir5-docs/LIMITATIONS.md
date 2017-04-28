@@ -49,12 +49,12 @@ virtual memory          (kbytes, -v) unlimited
 file locks                      (-x) unlimited
 ```
 
-You may need to up the hard limit in order to run more bees.
+You may need to up the hard limit if `open files` in order to run more bees.
 
 ### Executor Limits
 The stingers of a Bee are offloaded to threads an run in an executor. The current equation of the amount of concurrent stringers is: `CPUs * 8`.
 
-If your instance has 1 CPU, you can only fire `8` stringers for a bee at a time. It is noted that the left over `2`, are in queue and fired as soon as threads become open again.
+If your instance has 1 CPU, you can only fire `8` stringers for a bee at a time. It is noted that the left over `2`, are in queue and fired as soon as threads become available.
 
 ### Articles
 * http://javarevisited.blogspot.com/2013/08/how-to-fix-javanetsocketexception-too-many-open-files-java-tomcat-weblogic.html
