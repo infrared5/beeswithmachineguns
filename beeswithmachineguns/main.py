@@ -173,13 +173,13 @@ commands:
 
     parser.add_option_group(attack_group)
 
-    # Attack Stream - RTMPBee
+    # Attack Stream - RTMP/RTSPBee
     attach_group2 = OptionGroup(parser, "attackStream",
-                                """Beginning a video attack requires only that you specify the --cmd option with the formatted Java command for RTMPBee""")
+                                """Beginning a video attack requires only that you specify the --cmd option with the formatted Java command for RTMPBee and RTSPBee""")
 
     attach_group2.add_option('-Z', '--cmd',  metavar="COMMAND",  nargs=1,
                             action='store', dest='command', type='string', default=False,
-                            help="The command to issue on an RTMPBee.")
+                            help="The command to issue on an RTMPBee/RTSPBee.")
     parser.add_option_group(attach_group2)
 
     # Attack Stream Manager - RTMPBee

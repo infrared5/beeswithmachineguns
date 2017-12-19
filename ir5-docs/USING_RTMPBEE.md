@@ -5,6 +5,7 @@
 
 ## Bee
 Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) directory and contain bees that can be run using with Java 7 or Java 8.
+Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
 
 _Java 8 RTMP Bee is recommended._
 
@@ -16,6 +17,7 @@ _Java 8 RTMP Bee is recommended._
   * [attackStream](#attackstream)
   * [attackStreamManager](#attackstreammanager)
 * [RTMPBee JAR](#rtmpbee-jar)
+* [RTSPBee JAR](#rtspbee-jar)
 * [System SetUp](#system-setup)
 * [Running an Attack](#running-an-attack)
   * [Start a Broadcast](#start-a-broadcast)
@@ -27,7 +29,7 @@ _Java 8 RTMP Bee is recommended._
 * [Tracking](#tracking)
 
 # Requirements
-The following dependencies are required on your system in order to perform a *beeswithmachineguns* attack with *RTMPBee*.
+The following dependencies are required on your system in order to perform a *beeswithmachineguns* attack with *RTMPBee* and/or *RTSPBee*.
 
 > Check to be sure that you do not already have these dependencies on your system before installing with the `brew` examples.
 
@@ -67,6 +69,8 @@ Currently, Infrared5 has create 2 Bee AMIs with differing virutalizations and in
 
 ### Create a Bee AMI
 An AMI that contains the desired *RTMPBee* JAR is required in order to launch an attack.
+
+> To create an RTSPBee AMI, perform similar instructions but with the rtspbee JAR.
 
 To create the AMI with `paravirtual` virtualization:
 
@@ -175,11 +179,21 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 
 `attackStream` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the *RTMPBee* - on its root and is available to be invoked as such:
 
+### RTMPBee
+
 ```ssh
 ./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
 ```
 
 > [RTMP Bee Documentation](https://github.com/infrared5/rtmpbee)
+
+### RTSPBee
+
+```ssh
+./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
+```
+
+> [RTMP Bee Documentation](https://github.com/infrared5/rtspbee)
 
 ## attackStreamManager
 
@@ -226,6 +240,21 @@ $ java -jar rtmpbee.jar [server-endpoint] [n-streams] [timeout-seconds]
 Using the partials uris of the endpoint stream (for more fine grained detail) can be done using the CLI as follows:
 ```sh
 $ java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
+```
+
+# RTSPBee JAR
+
+Found in the [/rtspbee-dist](rtspbee-dist) directory of this repository are *RTSPBee* JARs for the desired Java version. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTSPBee JAVA program.
+
+The RTSPBee can be invoked with 2 separate sets of options:
+
+* Partial URIs
+
+## Partial URIs
+
+Using the partials uris of the endpoint stream (for more fine grained detail) can be done using the CLI as follows:
+```sh
+$ java -jar rtspbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
 ```
 
 ## CLI Options
