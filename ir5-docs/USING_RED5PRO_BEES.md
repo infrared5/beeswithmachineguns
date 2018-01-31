@@ -1,13 +1,15 @@
-# RTMPBee
-> The RTMPBee project utilizes an AMI that is equipped with a Red5-based java program that attempts to subscribe N-number of clients to a stream on a target server.
+# Red5Pro Bees
+> The suite of Red5 Pro Bees utilizes an AMI that is equipped with Red5-based java and cli programs that attempt to subscribe N-number of clients to a stream on a target server.
 
-[IR5 RTMPBee fork](https://github.com/infrared5/rtmpbee)
+* [RTMPBee](https://github.com/red5pro/rtmpbee)
+* [RTSPBee](https://github.com/red5pro/rtspbee)
+* [RTCBee](https://github.com/red5pro/rtcbee)
 
 ## Bee
 Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) directory and contain bees that can be run using with Java 7 or Java 8.
 Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
 
-_Java 8 RTMP Bee is recommended._
+_Java 8 RTMP/RTSP Bee is recommended._
 
 * [Requirements](#requirements)
   * [Python](#python)
@@ -193,7 +195,7 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 ./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
 ```
 
-> [RTMP Bee Documentation](https://github.com/infrared5/rtspbee)
+> [RTSP Bee Documentation](https://github.com/infrared5/rtspbee)
 
 ## attackStreamManager
 
