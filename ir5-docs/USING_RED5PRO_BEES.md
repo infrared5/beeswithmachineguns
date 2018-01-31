@@ -5,7 +5,8 @@
 * [RTSPBee](https://github.com/red5pro/rtspbee)
 * [RTCBee](https://github.com/red5pro/rtcbee)
 
-## Bee
+## Bees
+
 Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) directory and contain bees that can be run using with Java 7 or Java 8.
 
 Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
@@ -32,6 +33,7 @@ _Java 8 RTMP/RTSP Bee is recommended._
 * [Tracking](#tracking)
 
 # Requirements
+
 The following dependencies are required on your system in order to perform a *beeswithmachineguns* attack with *RTMPBee* and/or *RTSPBee*.
 
 > Check to be sure that you do not already have these dependencies on your system before installing with the `brew` examples.
@@ -62,15 +64,18 @@ You can use either:
 _Java 8 is preferred._
 
 ## AWS
+
 Amazon Web Services is used to spin up instances from an AMI that will serve as a single bee with N-number of bullets.
 
 ### Infrared5 Bee AMIs
+
 Currently, Infrared5 has create 2 Bee AMIs with differing virutalizations and in difference zones:
 
 * *US East (N. Virginia)*: `red5pro-load-bee-paravirtual`
 * *US West (N. California)*: `red5pro-load-bee-hvm`
 
 ### Create a Bee AMI
+
 An AMI that contains the desired *RTMPBee* JAR is required in order to launch an attack.
 
 > To create an RTSPBee AMI, perform similar instructions but with the rtspbee JAR.
@@ -119,6 +124,7 @@ _The above installs Java 8 to use the [rtmpbee-dist/rtmpbee-java8.jar](rtmpbee-d
 > Reference: [https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04)
 
 #### Upload the RTMPBee JAR
+
 SFTP into the instance, for example:
 
 ```sh
@@ -141,6 +147,7 @@ In the prompt, to upload the Java 7 bee:
 _SSH back into the instance to ensure that the JAR was uploaded properly._
 
 #### Create the AMI from the Instance
+
 Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > Instances* and:
 
 1. Right-Click, *Image > Create Image*.
@@ -151,6 +158,7 @@ Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > 
 6. Once the AMI is available, Navigate back to *EC2 > Instances* and terminate the instance as we don't need it any more - we will be launching new instances based on the AMI.
 
 #### Important Information
+
 The specifics of the AMI in this example that will be used in the attack:
 
 | AMI ID | Name | Security Group | Region | Subnet | PEM | User |
@@ -160,6 +168,7 @@ The specifics of the AMI in this example that will be used in the attack:
 > These are the details that match the AMI set up in *US East (N. Virginia)*. There is an additional AMI set up in *US West (N. California)*.
 
 ### Credential Requirements
+
 The following are required credentials in order to properly run bees with an *RTMPBee*:
 
 * PEM file for AWS account usage in attack
@@ -169,7 +178,8 @@ These will be referred to as *PEM_FILE*, *AWS_KEY* and *AWS_SECRET* in any examp
 
 > Please ask your administrator for these credentials.
 
-#### You may need to create a new IAM User.
+#### You may need to create a new IAM User
+
 Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy, which can be located in the Account Credentials.
 
 > It is this User's *AWS_KEY* and *AWS_SECRET* values that will be used in an attack using the Infrared5 AWS account.
@@ -328,6 +338,7 @@ $ pip install -r requirements.txt
 In the context of this testing, the bees sent on attack are subscribers. As such, a broadcast session should be established prior to running an attack. This will provide more reliable information in requesting and establishing subscriptions in a load.
 
 ## Start a Broadcast
+
 To start a broadcast session visit the Origin server and start an RTMP broadcast - mainly to get around CORS issues you may come across -, e.g., [http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp](http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp).
 
 1. Enter a `Stream Name` (i.e., `test`).
@@ -337,6 +348,7 @@ To start a broadcast session visit the Origin server and start an RTMP broadcast
 > The `Stream Name` provided will be used in the attack commands. Additionally, the `context` options will be `live` if using the broadcast URL from above.
 
 ## Verify
+
 To verify that you have established a broadcast session and have an available consumable endpoint for the *RTMPBee* subscribers, make the following similar `GET` request on the StreamManager:
 
 ```sh
@@ -358,6 +370,7 @@ Note the `name` and `scope` attributes; they correspond to the `stream name` and
 There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackStreamManager`, and `down`.
 
 ### AMI
+
 An AMI is used to spin up *bees* as dynamic servers. The AMI setup by Infrared5 is named `IR5 - RTMPBee`. You will need the proper associated *PEM_FILE* that was used in creating the AMI. The security group used was `red5-pro-ports`.
 
 Before proceeding, make sure you have the *PEM_FILE* in your `~/.ssh` directory and have access to the proper *AWS_KEY* and *AWS_SECRET* credentials.
@@ -365,6 +378,7 @@ Before proceeding, make sure you have the *PEM_FILE* in your `~/.ssh` directory 
 > If you set up your system to use `virtualenvwrapper`, first issue: `workon bees` before proceeding.
 
 ### up
+
 The `up` command is prepended with the definition of global properties related to credentials. The following command will spin up *3* servers based on the AMI with id *ami-49874122* with the security group *default* in the *us-east-1a* AWS zone.
 
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
@@ -376,6 +390,7 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b6
 > Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
 
 ### attackStreamManager
+
 The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName?action=subscribe&accessToken=abc123` and request each stream to shut down *10* seconds after connecting.
 
 ```sh
@@ -385,6 +400,7 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStream
 > Note the quotation marks (`"`) around the stream manager API endpoint.
 
 ### down
+
 The `down` command spins down the spun up instances through `up`. This should be run after the `attackStreamManager` has run its course.`
 
 ```sh
@@ -394,6 +410,7 @@ $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 # Tracking
 
 ## Stream Manager API
+
 Revist the stats for the broadcast using the Stream Manager API while the attack is happening, e.g.,:
 
 ```sh
@@ -405,6 +422,7 @@ You should see the `connectedSubscriber` attribute value tally be equal to the n
 > The stats are updated at intervals around 10 seconds. If you do not see the expected results right away, refresh the page or make the `curl` request at a later time.
 
 ## NetData
+
 NetData was set up on the launched Edge (where subscribers are attacking). [https://github.com/firehol/netdata](https://github.com/firehol/netdata)
 
 You can view the console for NetData and track CPU, load, etc., by visiting the instance at port `19999`. e.g., [http://xxx.xxx.xxx.xxx:19999/](http://xxx.xxx.xxx.xxx:19999/).
