@@ -7,6 +7,7 @@
 
 ## Bee
 Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) directory and contain bees that can be run using with Java 7 or Java 8.
+
 Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
 
 _Java 8 RTMP/RTSP Bee is recommended._
