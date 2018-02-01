@@ -1288,23 +1288,48 @@ def _get_existing_regions():
     return existing_regions
 
 def _attackStream(params):
+
+    """
+    username="root"
+    password="qwe34%^QWE"
+    pkey_w='keyfile/1254'
+    try:
+        pkey=paramiko.RSAKey.from_private_key_file(pkey_w)
+    except paramiko.PasswordRequiredException:
+        pkey=paramiko.RSAKey.from_private_key_file(pkey_w,password)
+    ssh=paramiko.SSHClient()
+    ssh.load_system_host_keys()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(hostname,port=23111,username=username,pkey=pkey)
+    """
+
     print('Bee %i is joining the swarm.' % params['i'])
     try:
         client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
         pem_path = params.get('key_name') and _get_pem_path(params['key_name']) or None
         print('pem_path: %s' % pem_path)
         if not os.path.isfile(pem_path):
             print("no pem.")
             client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(params['instance_name'], username=params['username'])
         else:
-            print("attempt connection to %s as %s, & pem %s" % (params['instance_name'], params['username'], pem_path))
+            pkey_w = pem_path
+            try:
+                print("attempt connect with pem...")
+                pkey=paramiko.RSAKey.from_private_key_file(pkey_w)
+            except paramiko.PasswordRequiredException as exc:
+                print("oops. maybe password protected... trying again...")
+                pkey = paramiko.RSAKey.from_private_key_file(pem_path,'red5pro')
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(
                 params['instance_name'],
+                port=22,
                 username=params['username'],
-                key_filename=pem_path)
+                pkey=pkey)
+            print("connected.")
 
         print('Bee %i is firing her video camera. Click Click!' % params['i'])
         print('Bee %i issuing commmand: %s' % (params['i'], params['command']))
@@ -1353,57 +1378,6 @@ def attackStream(cmd, **options):
             'username': username,
             'key_name': key_name,
             'command': cmd
-        })
-
-    print('Stinging URL so it will be cached for the attack.')
-    print('Organizing the swarm.')
-    # Spin up processes for connecting to EC2 instances
-    pool = Pool(len(params))
-    results = pool.map(_attackStream, params)
-
-    print('Offensive complete.')
-    print('The swarm is awaiting new orders.')
-    sys.exit(0)
-
-def attackStreamManager(url, **options):
-    endpoint_url = url
-    port = options.get('port', 0)
-    count = options.get('streamcount', 0)
-    streamtimeout = options.get('streamtimeout', 0)
-
-    print('RESTful Stream access endpoint provided as url: %s.' % endpoint_url)
-
-    username, key_name, zone, instance_ids = _read_server_list(options.get('zone'))
-
-    if not instance_ids:
-        print('No bees are ready to attack.')
-        return
-
-    print('Connecting to the hive.')
-
-    ec2_connection = boto.ec2.connect_to_region(_get_region(zone))
-
-    print('Assembling bees.')
-
-    reservations = ec2_connection.get_all_instances(instance_ids=instance_ids)
-
-    instances = []
-
-    for reservation in reservations:
-        instances.extend(reservation.instances)
-
-    instance_count = len(instances)
-
-    params = []
-
-    for i, instance in enumerate(instances):
-        params.append({
-            'i': i,
-            'instance_id': instance.id,
-            'instance_name': instance.public_dns_name,
-            'username': username,
-            'key_name': key_name,
-            'command': 'java -jar rtmpbee.jar %s %d %d %d' % (endpoint_url, port, count, streamtimeout)
         })
 
     print('Stinging URL so it will be cached for the attack.')

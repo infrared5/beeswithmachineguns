@@ -173,30 +173,14 @@ commands:
 
     parser.add_option_group(attack_group)
 
-    # Attack Stream - RTMP/RTSPBee
+    # Attack Stream - RTMP/RTSPBee/RTCBee
     attach_group2 = OptionGroup(parser, "attackStream",
-                                """Beginning a video attack requires only that you specify the --cmd option with the formatted Java command for RTMPBee and RTSPBee""")
+                                """Beginning a video attack requires only that you specify the --cmd option with the formatted command for RTMPBee, RTSPBee & RTCBee""")
 
     attach_group2.add_option('-Z', '--cmd',  metavar="COMMAND",  nargs=1,
                             action='store', dest='command', type='string', default=False,
-                            help="The command to issue on an RTMPBee/RTSPBee.")
+                            help="The command to issue on an RTMPBee/RTSPBee/RTCBee.")
     parser.add_option_group(attach_group2)
-
-    # Attack Stream Manager - RTMPBee
-    attach_group3 = OptionGroup(parser, "attackStreamManager",
-                                """Beginning a video attack requires that you specify the --url option pointing to the RESTful endpoint to access the subscription stream URL""")
-
-    attach_group3.add_option('--endpoint', metavar="URL", nargs=1,
-                                action='store', dest='endpoint', type='string',
-                                help="The RESTful URL endpoint to request stream URL.")
-    attach_group3.add_option('--port', metavar='port', nargs=1,
-                                action='store', dest='port', default=1935, type='int',
-                                help='The target port to subscribe on (default: 1935).')
-    attach_group3.add_option('--streamcount', metavar='streamcount', nargs=1, action='store', dest='streamcount', default=5, type='int',
-                            help='Amount of streams (bees) to launch as subscribers (default: 5).')
-    attach_group3.add_option('--streamtimeout', metavar='streamtimeout', nargs=1, action='store', dest='streamtimeout', default=5, type='int',
-                            help='Timeout, in seconds (default: 5).')
-    parser.add_option_group(attach_group3)
 
     (options, args) = parser.parse_args()
 
@@ -288,7 +272,7 @@ commands:
 
     elif command == 'attackStream':
         if not options.command:
-            parser.error('To run an RTMPBee attack you need to specify a command with --cmd')
+            parser.error('To run an RTMPBee/RTSPBee/RTCBee attack you need to specify a command with --cmd')
 
         regions_list = []
         for region in bees._get_existing_regions():
@@ -297,27 +281,6 @@ commands:
         for region in regions_list:
             additional_options = dict(zone=region)
             threading.Thread(target=bees.attackStream, args=(options.command,),
-                    kwargs=additional_options).start()
-            #time allowed between threads
-            time.sleep(delay)
-
-    elif command == 'attackStreamManager':
-        if not options.endpoint:
-            parse.error('To run the RTMPBee attack against an stream access through the Stream Manager API, you must specify a --endpoint option');
-
-        additional_options = dict(
-                port=options.port,
-                streamcount=options.streamcount,
-                streamtimeout=options.streamtimeout
-        )
-
-        regions_list = []
-        for region in bees._get_existing_regions():
-                regions_list.append(region)
-
-        for region in regions_list:
-            additional_options['zone'] = region
-            threading.Thread(target=bees.attackStreamManager, args=(options.endpoint,),
                     kwargs=additional_options).start()
             #time allowed between threads
             time.sleep(delay)
