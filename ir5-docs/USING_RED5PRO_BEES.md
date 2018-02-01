@@ -7,9 +7,9 @@
 
 ## Bees
 
-Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) directory and contain bees that can be run using with Java 7 or Java 8.
+Distributions for the *RTMP Bee* are available in the releases for that project at: [https://github.com/red5pro/rtmpbee/releases](https://github.com/red5pro/rtmpbee/releases).
 
-Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
+Distributions for the *RTSP Bee* are available in the releases for that project at: [https://github.com/red5pro/rtspbee/releases](https://github.com/red5pro/rtspbee/releases).
 
 Distributions for the *RTCBee* are available in the releases for that project at: [https://github.com/red5pro/rtcbee/releases](https://github.com/red5pro/rtcbee/releases) and are shell-based scripts.
 
@@ -123,14 +123,20 @@ _The creation of one for HVM is very similar, with the only change being in Step
 While signed into the Instance, install Java:
 
 ```sh
-$ sudo add-apt-repository ppa:webupd8team/java
-$ sudo apt-get update
-$ sudo apt-get install oracle-java8-installer
+* sudo apt-get update
+$ sudo apt-get install default-jre
 ```
 
 _The above installs Java 8 to use the [rtmpbee-dist/rtmpbee-java8.jar](rtmpbee-dist/rtmpbee-java8.jar)._
 
 > Reference: [https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04)
+
+#### Install Python 2.7
+
+```sh
+$ sudo apt-get install build-essential checkinstall
+$ sudo apt install python-minima
+```
 
 #### Install Chromium Browser
 
@@ -155,41 +161,19 @@ $ sudo apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 
 
 #### Upload the RTMPBee JAR
 
-SFTP into the instance, for example:
-
-```sh
-$ sftp -i ~/.ssh/red5proqa.pem ubuntu@xxx.xxx.xxx.xxx
-```
-> You will upload the Java 8 *or* Java 7 version of the **rtmpbee** depending on the Java version installed on the instance.
-
-In the prompt, to upload the Java 8 bee:
-
-```sh
-> put rtmpbee-dist/rtmpbee-java8.jar rtmpbee.jar
-```
-
-In the prompt, to upload the Java 7 bee:
-
-```sh
-> put rtmpbee-dist/rtmpbee-java7.jar rtmpbee.jar
-```
-
-_SSH back into the instance to ensure that the JAR was uploaded properly._
+* Grab the latest release link address from [https://github.com/red5pro/rtmpbee/releases](https://github.com/red5pro/rtmpbee/releases).
+* `ssh` into the instance.
+* Execute the following command (replacing the version number): `$ wget https://github.com/red5pro/rtmpbee/releases/download/vX.X.X/rtmpbee-X.X.X.zip`.
+* Run `unzip` on the downloaded file: `$ unzip rtmpbee-X.X.X.zip`.
+* Move/Copy the unzipped Jar to `rtmpbee.jar`.
 
 #### Upload the RTSPBee JAR
 
-SFTP into the instance, for example:
-
-```sh
-$ sftp -i ~/.ssh/red5proqa.pem ubuntu@xxx.xxx.xxx.xxx
-```
-> You will upload the Java 8 version of the **rtspbee**.
-
-In the prompt, to upload the Java 8 bee:
-
-```sh
-> put rtspbee-dist/rtspbee-java8.jar rtspbee.jar
-```
+* Grab the latest release link address from [https://github.com/red5pro/rtspbee/releases](https://github.com/red5pro/rtspbee/releases).
+* `ssh` into the instance.
+* Execute the following command (replacing the version number): `$ wget https://github.com/red5pro/rtspbee/releases/download/vX.X.X/rtspbee-X.X.X.zip`.
+* Run `unzip` on the downloaded file: `$ unzip rtspbee-X.X.X.zip`.
+* Move/Copy the unzipped Jar to `rtspbee.jar`.
 
 #### Upload the RTCBee Files
 
@@ -197,6 +181,8 @@ In the prompt, to upload the Java 8 bee:
 * `ssh` into the instance.
 * Execute the following command (replacing the version number): `$ wget https://github.com/red5pro/rtcbee/releases/download/vX.X.X/rtcbee-bash-X.X.X.zip`.
 * Run `unzip` on the downloaded file: `$ unzip rtcbee-bash-X.X.X.zip`.
+
+The extracted directory will be named `rtcbee-bash`. The directory will contain the executable scripts required to run an RTCBee attack.
 
 #### Create the AMI from the Instance
 
@@ -238,7 +224,7 @@ Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy, w
 
 # RTMPBee JAR
 
-Found in the [/rtmpbee-dist](rtmpbee-dist) directory of this repository are *RTMPBee* JARs for the desired Java version. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTMPBee JAVA program.
+Found in the [RTMPBee Releases](https://github.com/red5pro/rtmpbee/releases) are *RTMPBee* distributions for the desired Java version. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTMPBee JAVA program.
 
 The RTMPBee can be invoked with 2 separate sets of options:
 
@@ -262,7 +248,7 @@ $ java -jar rtmpbee.jar [server-url] [server-port] [application-name] [stream-na
 
 # RTSPBee JAR
 
-Found in the [/rtspbee-dist](rtspbee-dist) directory of this repository are *RTSPBee* JARs for the desired Java version. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTSPBee JAVA program.
+Found in the [RTSPBee Releases](https://github.com/red5pro/rtmpbee/releases) are *RTSPBee* distributions for the desired Java version. This JAR file is the one that resides on the AMI server that is used to spawn the bees. The python scripts describe below will invoke that remote JAR upon spawn and attack. This section defines the API of the RTSPBee JAVA program.
 
 The RTSPBee can be invoked with 2 separate sets of options:
 
@@ -363,13 +349,13 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 * To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
 
 ```sh
-./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
+./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 10"
 ```
 
 * To run an attack using the Stream Manager (being sure to use the _insecure_ protocol of `http`):
 
 ```sh
-./bees attackStream --cmd "java -jar rtmpbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 1935 5 5"
+./bees attackStream --cmd "java -jar rtmpbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 1935 5 10"
 ```
 
 > [RTMP Bee Documentation](https://github.com/red5pro/rtmpbee)
@@ -379,13 +365,13 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 * To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
 
 ```sh
-./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
+./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 8554 live qa12345678 5 10"
 ```
 
 * To run an attack using the Stream Manager (being sure to use the _insecure_ protocol of `http`):
 
 ```sh
-./bees attackStream --cmd "java -jar rtspbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 1935 5 5"
+./bees attackStream --cmd "java -jar rtspbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 8554 5 10"
 ```
 
 > [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
@@ -395,13 +381,13 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 * To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
 
 ```sh
-./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee.sh \"https://your.red5pro-deploy.com/live/viewer.jsp?host=your.red5pro-deploy.com&stream=qa12345678\" 5 5"
+./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee.sh \"https://your.red5pro-deploy.com/live/viewer.jsp?host=your.red5pro-deploy.com&stream=qa12345678\" 5 10"
 ```
 
 * To run an attack using the Stream Manager (`https` is allowed for RTC bee attacks):
 
 ```sh
-./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee_sm.sh \"https://your.red5pro-deploy.com/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" live qa12345678 5 5"
+./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee_sm.sh \"https://your.red5pro-deploy.com/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" live qa12345678 5 10"
 ```
 
 > [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
