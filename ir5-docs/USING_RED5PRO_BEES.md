@@ -412,20 +412,46 @@ In the context of this testing, the bees sent on attack are subscribers. As such
 
 ## Start a Broadcast
 
-To start a broadcast session visit the Origin server and start an RTMP broadcast - mainly to get around CORS issues you may come across -, e.g., [http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp](http://xxx.xxx.xxx.xxx:5080/live/broadcast.jsp?host=xxx.xxx.xxx.xxx&view=rtmp).
+### Same Origin Server
 
-1. Enter a `Stream Name` (i.e., `test`).
-2. `Accept the security considerations from the Flash Player`.
-3. Click `Start Broadcast`.
+To start a broadcast session on the same server you will run an attack on, using the provided frontend in the Red5 Pro distribution:
 
-> The `Stream Name` provided will be used in the attack commands. Additionally, the `context` options will be `live` if using the broadcast URL from above.
+1. Visit the URL you have deployed your Red5 Pro Server remotely.
+2. The distributed frontend that has some handy test UI should be shown.
+3. Click on the *Live Streaming > Broadcast* section from the menu.
+4. Enter a `Stream Name` (i.e., `test`).
+6. Click `Start Broadcast`.
+
+> The `Stream Name` provided will be used in the attack commands. Additionally, the *context* options will be `live` if using the broadcast URL from above.
+
+### Stream Manager
+
+To start a broadcast utilizing the Stream Manager capabilities, using the provided `webrtcexample` webapp from the Red5 Pro distribution (requires `HTTPS`):
+
+1. Visit the URL you have deployed your Red5 Pro Server remotely.
+2. Click on the *Red 5Pro HTML SDK Testbed* section from the menu.
+3. You will be navigated to the `webrtcexamples` webapp.
+4. In the *Settings > Host* field, add the FQDN of the host.
+5. Leave the *Settings > WebApp* field value as `live`.
+6. Change the *Settings > Stream1 Name* value to `test`.
+
+> The `Stream Name` provided will be used in the attack commands. Additionally, the *context* options will be `live` if using the broadcast URL from above.
 
 ## Verify
 
-To verify that you have established a broadcast session and have an available consumable endpoint for the *RTMPBee* subscribers, make the following similar `GET` request on the StreamManager:
+### Same Origin Server
+
+To verify that you have established a broadcast session and have an available consumable endpoint for the *Bee* subscribers:
+
+1. From the same frontend you started a broadcast, click _to open in a new tap_ *Live Streaming > Subscribe*.
+2. Ensure that the stream name you provided (e.g., `test`) is listed in the UI.
+
+### Stream Manager
+
+To verify that you have established a broadcast session and have an available consumable endpoint for the *Bee* subscribers, make the following similar `GET` request on the StreamManager:
 
 ```sh
-$ curl -X GET http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName/stats?accessToken=abc123
+$ curl -X GET https://xxx.xxx.xxx.xxx/streammanager/api/2.0/event/live/test/stats?accessToken=abc123
 ```
 
 _or copy and paste the url into a browser_
@@ -440,7 +466,7 @@ Note the `name` and `scope` attributes; they correspond to the `stream name` and
 
 ## Attack
 
-There are 3 commands that will be used in issuing an attack with an RTMPBee: `up`, `attackStreamManager`, and `down`.
+There are 3 commands that will be used in issuing an attack with a Bee: `up`, `attackStream`, and `down`.
 
 ### AMI
 
@@ -460,27 +486,36 @@ Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is t
 $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g red5-pro-ports -t t1.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
-> Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStreamManager`.
+> Release of the console after issue `up` notifies of change to state of the EC2 instances requested. However, sometimes this is a falsey notification of the instances being able to receive SSH coammnds for the RTMPBees. Please allow an additional minute or two after the completion of `up` before issuing `attackStream`.
 
-### attackStreamManager
+### attackStream
 
-The `attackStreamManager` command invokes the *RTMPBee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName?action=subscribe&accessToken=abc123` and request each stream to shut down *10* seconds after connecting.
+The `attackStream` command invokes the target *Bee* with options explained in more detail previously in this document. The following command will invoke the RTMPBee to issue *5* subscription streams to the endpoint returned from `http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName?action=subscribe&accessToken=abc123` and request each stream to shut down *10* seconds after connecting.
 
 ```sh
-$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStreamManager --endpoint "http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName\?action\=subscribe\&accessToken\=abc123" --port 1935 --streamcount 5 --streamtimeout 10
+$ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees attackStream --cmd "java -jar rtmpbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/test?action=subscribe&accessToken=abc123\" 1935 5 10"
 ```
 
 > Note the quotation marks (`"`) around the stream manager API endpoint.
 
 ### down
 
-The `down` command spins down the spun up instances through `up`. This should be run after the `attackStreamManager` has run its course.`
+The `down` command spins down the spun up instances through `up`. This should be run after the `attackStream` has run its course.`
 
 ```sh
 $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees down
 ```
 
 # Tracking
+
+## Same Origin Server
+
+To track subscriptions, `ssh` into the server you are running an attack on and `tail` the *red5.log* to see print out of the current total connections:
+
+```sh
+$ cd /usr/local/red5pro/log
+$ tail -n50 red5.log
+```
 
 ## Stream Manager API
 
