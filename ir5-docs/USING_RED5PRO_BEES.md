@@ -15,24 +15,25 @@ Distributions for the *RTCBee* are available in the releases for that project at
 
 > Java 8 is recommended for the RTMP and RTSP Bee implementations.
 
+---
+
 * [Requirements](#requirements)
   * [Python](#python)
   * [Java](#java)
   * [Chromium Browser](#chromium-browser)
   * [AWS](#aws)
-* [Operations](#operations)
-  * [attackStream](#attackstream)
-  * [attackStreamManager](#attackstreammanager)
 * [RTMPBee JAR](#rtmpbee-jar)
 * [RTSPBee JAR](#rtspbee-jar)
 * [RTCBee Bash](#rtcbee-bash)
 * [System SetUp](#system-setup)
+* [Operations](#operations)
+  * [attackStream](#attackstream-operation)
 * [Running an Attack](#running-an-attack)
   * [Start a Broadcast](#start-a-broadcast)
   * [Verify](#verify)
   * [Attack](#attack)
     * [up](#up)
-    * [attackStreamManager](#attackStreamManager)
+    * [attackStream](#attackStream)
     * [down](#down)
 * [Tracking](#tracking)
 
@@ -86,9 +87,7 @@ Currently, Infrared5 has create 2 Bee AMIs with differing virutalizations and in
 
 ### Create a Bee AMI
 
-An AMI that contains the desired *RTMPBee* JAR is required in order to launch an attack.
-
-> To create an RTSPBee AMI, perform similar instructions but with the rtspbee JAR.
+An AMI that contains the RTMP, RTSP and RTC bee implementations is required in order to launch an attack.
 
 To create the AMI with `paravirtual` virtualization:
 
@@ -148,6 +147,12 @@ logind.conf: UserTasksMax=infinity
 system.conf: DefaultTasksMax=infinity
 ```
 
+Some additional lib dependencies are required, as well:
+
+```sh
+$ sudo apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget unzip
+```
+
 #### Upload the RTMPBee JAR
 
 SFTP into the instance, for example:
@@ -191,6 +196,7 @@ In the prompt, to upload the Java 8 bee:
 * Grab the latest release link address from [https://github.com/red5pro/rtcbee/releases](https://github.com/red5pro/rtcbee/releases).
 * `ssh` into the instance.
 * Execute the following command (replacing the version number): `$ wget https://github.com/red5pro/rtcbee/releases/download/vX.X.X/rtcbee-bash-X.X.X.zip`.
+* Run `unzip` on the downloaded file: `$ unzip rtcbee-bash-X.X.X.zip`.
 
 #### Create the AMI from the Instance
 
@@ -229,62 +235,6 @@ These will be referred to as *PEM_FILE*, *AWS_KEY* and *AWS_SECRET* in any examp
 Infrared5 has created the user `red5probee` with _AdministratorAccess_ policy, which can be located in the Account Credentials.
 
 > It is this User's *AWS_KEY* and *AWS_SECRET* values that will be used in an attack using the Infrared5 AWS account.
-
-# Operations
-
-The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a Java client which aides in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from *bees* was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the *bees* code to issue any CLI command through `attackStream`.
-
-## attackStream
-
-`attackStream` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up. The AMI contains a JAR file - considered the *RTMPBee* - on its root and is available to be invoked as such:
-
-### RTMPBee
-
-```sh
-./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
-```
-
-> [RTMP Bee Documentation](https://github.com/red5pro/rtmpbee)
-
-### RTSPBee
-
-```sh
-./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
-```
-
-> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
-
-### RTCBee
-
-```sh
-./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee.sh \"https://your.red5pro-deploy.com/live/viewer.jsp?host=your.red5pro-deploy.com&stream=qa12345678\" 5 5"
-```
-
-> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
-
-
-## attackStreamManager
-
-`attackStreamManager` makes running an attack using an *RTMPBee* easier by just providing a full REST URL with `context` and `streamName` URI parameters (the webapp and stream name of to which a live broadcast is in session) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target (e.g., Edge) subscriber server details.
-
-```sh
-./bees attackStreamManager --endpoint http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName\?action\=subscribe\&accessToken\=abc123 --port 1935 --streamcount 5 --streamtimeout 5
-
-```
-
-### --endpoint
-This URL is passed along to each Bee (RTMPBee) which handles making the RESTful request to access the endpoint for stream subscription.
-
-[Stream Manager API Documentation](https://www.red5pro.com/docs/server/streammanagerapi/#rest-api-for-streams)
-
-### --port
-The port on the Edge server for the *RTMPBee* to make an RTMP connection to start consumption of the stream.
-
-### --streamcount
-The amount of Bees (subscribers) to issue
-
-### --streamtimeout
-The length of time to keep the subscription stream open (in seconds).
 
 # RTMPBee JAR
 
@@ -397,6 +347,64 @@ $ workon bees
 ```sh
 $ pip install -r requirements.txt
 ```
+
+# Operations
+
+The current setup and teardown of EC2 instances used by [beeswithmachineguns](https://github.com/newsapps/beeswithmachineguns) is utilized. However, since Red5 Pro/Infrared5 developed a executable clients (a.k.a. *Bees*) which aide in establishing N-number of subscription streams for 1 broadcast stream, the original `attack` operation from *bees* was not immediately applicable to achieve a "video sting". As such, Infrared5 has modified the *bees* code to issue any CLI command through `attackStream`.
+
+## attackStream Operation
+
+`attackStream` is similar to `attack` in that it issues a request on each bee specified in `up`. The only option it accepts is `--cmd` which is a command `string` to run on the attached shell of the AMI instance that is spun up.
+
+The AMI contains a executable files - considered the *Bees* - on its root and is available to be invoked as in the following examples.
+
+### RTMPBee
+
+* To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
+
+```sh
+./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
+```
+
+* To run an attack using the Stream Manager (being sure to use the _insecure_ protocol of `http`):
+
+```sh
+./bees attackStream --cmd "java -jar rtmpbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 1935 5 5"
+```
+
+> [RTMP Bee Documentation](https://github.com/red5pro/rtmpbee)
+
+### RTSPBee
+
+* To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
+
+```sh
+./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
+```
+
+* To run an attack using the Stream Manager (being sure to use the _insecure_ protocol of `http`):
+
+```sh
+./bees attackStream --cmd "java -jar rtspbee.jar \"http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" 1935 5 5"
+```
+
+> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
+
+### RTCBee
+
+* To run an attack on the same Red5 Pro Server that the broadcast is occurring on:
+
+```sh
+./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee.sh \"https://your.red5pro-deploy.com/live/viewer.jsp?host=your.red5pro-deploy.com&stream=qa12345678\" 5 5"
+```
+
+* To run an attack using the Stream Manager (`https` is allowed for RTC bee attacks):
+
+```sh
+./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee_sm.sh \"https://your.red5pro-deploy.com/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" live qa12345678 5 5"
+```
+
+> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
 
 # Running an Attack
 
