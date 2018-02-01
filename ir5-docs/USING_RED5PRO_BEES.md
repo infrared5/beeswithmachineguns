@@ -11,17 +11,19 @@ Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) d
 
 Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
 
-_Java 8 RTMP/RTSP Bee is recommended._
+> Java 8 RTMP/RTSP Bee is recommended.
 
 * [Requirements](#requirements)
   * [Python](#python)
   * [Java](#java)
+  * [Chromium Browser](#chromium-browser)
   * [AWS](#aws)
 * [Operations](#operations)
   * [attackStream](#attackstream)
   * [attackStreamManager](#attackstreammanager)
 * [RTMPBee JAR](#rtmpbee-jar)
 * [RTSPBee JAR](#rtspbee-jar)
+* [RTCBee Bash](#rtcbee-bash)
 * [System SetUp](#system-setup)
 * [Running an Attack](#running-an-attack)
   * [Start a Broadcast](#start-a-broadcast)
@@ -34,7 +36,7 @@ _Java 8 RTMP/RTSP Bee is recommended._
 
 # Requirements
 
-The following dependencies are required on your system in order to perform a *beeswithmachineguns* attack with *RTMPBee* and/or *RTSPBee*.
+The following dependencies are required on your system in order to perform a *beeswithmachineguns* attack with *RTMPBee*, *RTSPBee* and/or *RTCBee*.
 
 > Check to be sure that you do not already have these dependencies on your system before installing with the `brew` examples.
 
@@ -62,6 +64,12 @@ You can use either:
 * Java 1.8
 
 _Java 8 is preferred._
+
+## Chromium Browser
+
+The Chromium Browser is used by the *RTCBee* to run an attack using WebRTC headlessly.
+
+> You may need to modify the rtcbee scripts locally to point to your Chromium Browser install if not using Linux and installing `chromium-browser` through a package manager.
 
 ## AWS
 
@@ -123,12 +131,27 @@ _The above installs Java 8 to use the [rtmpbee-dist/rtmpbee-java8.jar](rtmpbee-d
 
 > Reference: [https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-get-on-ubuntu-16-04)
 
+#### Install Chromium Browser
+
+```sh
+$ sudo apt-get install -y chromium-browser
+```
+
+For client to open large number of Chromium instances need to increase limits:
+
+Under `/etc/systemd/` update files with options (reboot required for it to be applied):
+
+```sh
+logind.conf: UserTasksMax=infinity
+system.conf: DefaultTasksMax=infinity
+```
+
 #### Upload the RTMPBee JAR
 
 SFTP into the instance, for example:
 
 ```sh
-$ sftp -i ~/.ssh/red5proqa.pem ubuntu@54.237.207.215
+$ sftp -i ~/.ssh/red5proqa.pem ubuntu@xxx.xxx.xxx.xxx
 ```
 > You will upload the Java 8 *or* Java 7 version of the **rtmpbee** depending on the Java version installed on the instance.
 
@@ -145,6 +168,27 @@ In the prompt, to upload the Java 7 bee:
 ```
 
 _SSH back into the instance to ensure that the JAR was uploaded properly._
+
+#### Upload the RTSPBee JAR
+
+SFTP into the instance, for example:
+
+```sh
+$ sftp -i ~/.ssh/red5proqa.pem ubuntu@xxx.xxx.xxx.xxx
+```
+> You will upload the Java 8 version of the **rtspbee**.
+
+In the prompt, to upload the Java 8 bee:
+
+```sh
+> put rtspbee-dist/rtspbee-java8.jar rtspbee.jar
+```
+
+#### Upload the RTCBee Files
+
+* Grab the latest release link address from [https://github.com/red5pro/rtcbee/releases](https://github.com/red5pro/rtcbee/releases).
+* `ssh` into the instance.
+* Execute the following command (replacing the version number): `$ wget https://github.com/red5pro/rtcbee/releases/download/vX.X.X/rtcbee-bash-X.X.X.zip`.
 
 #### Create the AMI from the Instance
 
@@ -194,25 +238,34 @@ The current setup and teardown of EC2 instances used by [beeswithmachineguns](ht
 
 ### RTMPBee
 
-```ssh
+```sh
 ./bees attackStream --cmd "java -jar rtmpbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
 ```
 
-> [RTMP Bee Documentation](https://github.com/infrared5/rtmpbee)
+> [RTMP Bee Documentation](https://github.com/red5pro/rtmpbee)
 
 ### RTSPBee
 
-```ssh
+```sh
 ./bees attackStream --cmd "java -jar rtspbee.jar xxx.xxx.xxx.xxx 1935 live qa12345678 5 5"
 ```
 
-> [RTSP Bee Documentation](https://github.com/infrared5/rtspbee)
+> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
+
+### RTCBee
+
+```sh
+./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee.sh \"https://your.red5pro-deploy.com/live/viewer.jsp?host=your.red5pro-deploy.com&stream=qa12345678\" 5 5"
+```
+
+> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
+
 
 ## attackStreamManager
 
-`attackStreamManager` makes running an attack unsing an *RTMPBee* easier by just providing a full REST URL with `context` and `streamName` URI parameters (the webapp and stream name of to which a live broadcast is in session) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target (e.g., Edge) subscriber server details.
+`attackStreamManager` makes running an attack using an *RTMPBee* easier by just providing a full REST URL with `context` and `streamName` URI parameters (the webapp and stream name of to which a live broadcast is in session) as the endpoint. The provided URL will be used to run a `GET` request on the target Stream Manager to get the payload of a target (e.g., Edge) subscriber server details.
 
-```ssh
+```sh
 ./bees attackStreamManager --endpoint http://xxx.xxx.xxx.xxx:5080/streammanager/api/2.0/event/live/streamName\?action\=subscribe\&accessToken\=abc123 --port 1935 --streamcount 5 --streamtimeout 5
 
 ```
@@ -267,7 +320,17 @@ The RTSPBee can be invoked with 2 separate sets of options:
 
 Using the partials uris of the endpoint stream (for more fine grained detail) can be done using the CLI as follows:
 ```sh
-$ java -jar rtspbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
+$ java -jar -noverify rtspbee.jar [server-url] [server-port] [application-name] [stream-name] [n-streams] [timeout-seconds]
+```
+
+# RTCBee Bash
+
+Releases to the *RTCBee Bash* scripts can be found at [https://github.com/red5pro/rtcbee/releases](https://github.com/red5pro/rtcbee/releases).
+
+The RTCBee is a bash script that runs `chromium-browser` headlessly.
+
+```sh
+$ ./rtcbee.sh [server-endpoint] [n-streams] [timeout-seconds]
 ```
 
 ## CLI Options
@@ -320,7 +383,7 @@ $ git clone git@github.com:infrared5/beeswithmachineguns.git bees_ir5
 
 ```sh
 $ cd bees_ir5
-$ git checkout invaluable origin/client/invaluable
+$ git checkout client/infrared5 origin/client/infrared5
 $ mkvirtualenv bees
 $ workon bees
 ```
@@ -383,7 +446,7 @@ The `up` command is prepended with the definition of global properties related t
 
 Additionally, the *ec2-user* user, which is associated with the *PEM_FILE*, is the user that is logged into an SSH session when the bees are ready to attack.
 
-```ssh
+```sh
 $ AWS_ACCESS_KEY_ID=AWS_KEY AWS_SECRET_ACCESS_KEY=AWS_SECRET ./bees up -i ami-b669fba0 -k red5proqa -s 1 -g red5-pro-ports -t t1.micro -z us-east-1a -l ec2-user -v subnet-259d4f52
 ```
 
@@ -431,7 +494,7 @@ You can view the console for NetData and track CPU, load, etc., by visiting the 
 
 Using `tcptrack` on Origin and Edge servers. SSH into server and issue:
 
-```ssh
+```sh
 $ sudo tcptrack -i eth0 port 1935
 ```
 
