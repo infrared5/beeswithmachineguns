@@ -201,9 +201,13 @@ The specifics of the AMI in this example that will be used in the attack:
 
 | AMI ID | Name | Security Group | Region | Subnet | PEM | User |
 | --- | --- | --- | --- | --- | --- | --- |
-| ami-b669fba0| red5pro-load-paravirtual | red5-pro-ports | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
+| ami-b669fba0 | red5pro-load-paravirtual | red5-pro-ports | us-east-1a | subnet-259d4f52 | red5proqa | ec2-user |
 
 > These are the details that match the AMI set up in *US East (N. Virginia)*. There is an additional AMI set up in *US West (N. California)*.
+
+| AMI ID | Name | Security Group | Region | Subnet | PEM | User |
+| --- | --- | --- | --- | --- | --- | --- |
+| ami-f75e5197 | red5pro-load-bee-rtc-rtmp-rtsp | red5pro-ports | us-west-1b | subnet-07106863 | 20170228auto | ubuntu |
 
 ### Credential Requirements
 
