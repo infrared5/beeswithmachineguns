@@ -11,7 +11,9 @@ Distributions for the *RTMP Bee* are available in [rtmpbee-dist](rtmpbee-dist) d
 
 Distributions for the *RTSP Bee* are available in [rtspbee-dist](rtspbee-dist) directory and contains a Java 8 build only.
 
-> Java 8 RTMP/RTSP Bee is recommended.
+Distributions for the *RTCBee* are available in the releases for that project at: [https://github.com/red5pro/rtcbee/releases](https://github.com/red5pro/rtcbee/releases) and are shell-based scripts.
+
+> Java 8 is recommended for the RTMP and RTSP Bee implementations.
 
 * [Requirements](#requirements)
   * [Python](#python)
