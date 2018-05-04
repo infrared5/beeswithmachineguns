@@ -399,6 +399,8 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 ./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee_sm.sh \"https://your.red5pro-deploy.com/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" live qa12345678 5 10"
 ```
 
+> [RTC Bee Documentation](https://github.com/red5pro/rtcbee)
+
 ### RTMPBee Publisher
 
 * To run a broadcaster attack on the Red5 Pro Server with an RTMP stream (assuming you have downloaded and converted an FLV file named `bbb_480p.flv`):
@@ -407,7 +409,7 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 ./bees attackStream --cmd "cd rtmpbee-publisher/script && ./rtmpbee-publisher.sh your.red5pro-deploy.com live stream1 1 120 bbb_480p.flv"
 ```
 
-> [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
+> [RTMP Bee Publisher Documentation](https://github.com/infrared5/rtmpbee-publisher)
 
 # Running an Attack
 
