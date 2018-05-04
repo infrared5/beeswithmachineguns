@@ -186,6 +186,15 @@ $ sudo apt-get install -yq gconf-service libasound2 libatk1.0-0 libc6 libcairo2 
 
 The extracted directory will be named `rtcbee-bash`. The directory will contain the executable scripts required to run an RTCBee attack.
 
+#### Upload the RTMPBee Publisher Files
+
+* Grab the latest release link address from [https://github.com/infrared5/rtmpbee-publisher/releases](https://github.com/infrared5/rtmpbee-publisher/releases).
+* `ssh` into the instance.
+* Execute the following command (replacing the version number): `$ wget hhttps://github.com/infrared5/rtmpbee-publisher/releases/download/vX.X.X/rtmpbee-publisher-X.X.X.zip`.
+* Run `unzip` on the downloaded file: `$ unzip rtmpbee-publisher-X.X.X.zip`.
+* Follow the *Download* and *Convert* instructions from [https://github.com/infrared5/rtmpbee-publisher#download-bbb](https://github.com/infrared5/rtmpbee-publisher#download-bbb) to generate an FLV file to use as the broadcast.
+* Place the converted FLV file in the directory with the `rtmpbee-publisher` bash file.
+
 #### Create the AMI from the Instance
 
 Navigate back to your AWS account in the browser. Locate the Instance in *EC2 > Instances* and:
@@ -388,6 +397,14 @@ The AMI contains a executable files - considered the *Bees* - on its root and is
 
 ```sh
 ./bees attackStream --cmd "cd rtcbee-bash && ./rtcbee_sm.sh \"https://your.red5pro-deploy.com/streammanager/api/2.0/event/live/qa12345678?action=subscribe\" live qa12345678 5 10"
+```
+
+### RTMPBee Publisher
+
+* To run a broadcaster attack on the Red5 Pro Server with an RTMP stream (assuming you have downloaded and converted an FLV file named `bbb_480p.flv`):
+
+```sh
+./bees attackStream --cmd "cd rtmpbee-publisher/script && ./rtmpbee-publisher.sh your.red5pro-deploy.com live stream1 1 120 bbb_480p.flv"
 ```
 
 > [RTSP Bee Documentation](https://github.com/red5pro/rtspbee)
